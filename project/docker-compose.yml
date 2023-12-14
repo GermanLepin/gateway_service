@@ -1,0 +1,81 @@
+version: "3.8"
+
+services:
+  client-service:
+    build:
+      context: ./../client-service
+      dockerfile: ./../client-service/client-service.dockerfile
+    ports:
+      - "9000:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: always
+
+  payment-service:
+    build:
+      context: ./../payment-service/
+      dockerfile: ./../payment-service/payment-service.dockerfile
+    ports:
+      - "9001:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: always
+
+  bank-api:
+    build:
+      context: ./../bank-api/
+      dockerfile: ./../bank-api/bank-api.dockerfile
+    ports:
+      - "9002:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: always
+
+  postgres-1:
+    image: 'postgres:14.2'
+    ports:
+      - "5432:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: client-service
+    restart: always
+    volumes:
+      - ./db-data/postgres-1/:/var/lib/postgresql/data/
+
+  postgres-2:
+    image: 'postgres:14.2'
+    ports:
+      - "5433:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: payment-service
+    restart: always
+    volumes:
+      - ./db-data/postgres-2/:/var/lib/postgresql/data/
+      
+  postgres-3:
+    image: 'postgres:14.2'
+    ports:
+      - "5434:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: bank-api
+    restart: always
+    volumes:
+      - ./db-data/postgres-3/:/var/lib/postgresql/data/
+  
