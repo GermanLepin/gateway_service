@@ -36,7 +36,7 @@ Implemented a payment method. Accepts the user ID, bank card information, and am
 | Key              | Data type | Description                                     | Example
 |------------------|-----------|-------------------------------------------------|----------- |
 | user id          | uuid      | a positive unique user identifier               | 6864c1e7-11b8-4380-ab2a-3021e83621d4 |
-| amount           | float32   | an amount of debit from the account is positive | 999.99     |
+| amount           | float32   | a positive amount of debit from the account     | 999.99     |
 | card_number      | uint32    | a card number                                   | 1111222233334444   |
 | card_holder_name | string    | a card holder name                              | NAME NAME  |
 | cvv              | uint32    | a cvv of the card                               | 123        |
