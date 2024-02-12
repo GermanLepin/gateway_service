@@ -1,10 +1,10 @@
 version: "3.8"
 
 services:
-  client-service:
+  gateway-service:
     build:
-      context: ./../client-service
-      dockerfile: ./../client-service/client-service.dockerfile
+      context: ./../gateway-service
+      dockerfile: ./../gateway-service/gateway-service.dockerfile
     ports:
       - "9000:80"
     deploy:
@@ -44,7 +44,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: client-service
+      POSTGRES_DB: gateway-service
     restart: always
     volumes:
       - ./db-data/postgres-1/:/var/lib/postgresql/data/

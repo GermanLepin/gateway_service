@@ -1,26 +1,28 @@
-package payment_handler
+package make_payment_handler
 
 import (
+	"time"
+
 	"context"
 	"encoding/json"
 	"net/http"
 
-	"payment-service/internal/application/dto"
+	"gateway-service/internal/application/dto"
 
-	"time"
+	"github.com/google/uuid"
 )
 
 type (
-	PaymentService interface {
+	MakePaymentService interface {
 		Process(ctx context.Context, w http.ResponseWriter, paymentRequest dto.PaymentRequest) (string, error)
 	}
 
 	JsonService interface {
-		ErrorJSON(w http.ResponseWriter, paymentResponse dto.PaymentResponse, statusCode int) error
+		ErrorJSON(w http.ResponseWriter, err error, status ...int) error
 	}
 )
 
-func (h *handler) Payment(w http.ResponseWriter, r *http.Request) {
+func (h *handler) MakePayment(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
@@ -31,41 +33,38 @@ func (h *handler) Payment(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	paymentRequest.OperationID = uuid.New()
 	paymentResponse := dto.PaymentResponse{
 		OperationID: paymentRequest.OperationID,
 		UserID:      paymentRequest.UserID,
 	}
 
-	paymentStatus, err := h.paymentService.Process(ctx, w, paymentRequest)
+	paymentStatus, err := h.makePaymentService.Process(ctx, w, paymentRequest)
 	paymentResponse.Status = paymentStatus
 	if err != nil {
-		paymentResponse.Error = err.Error()
-
-		h.jsonService.ErrorJSON(w, paymentResponse, http.StatusInternalServerError)
+		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
 	encoder := json.NewEncoder(w)
 	err = encoder.Encode(&paymentResponse)
 	if err != nil {
-		paymentResponse.Error = err.Error()
-
-		h.jsonService.ErrorJSON(w, paymentResponse, http.StatusInternalServerError)
+		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 }
 
 func New(
-	paymentService PaymentService,
+	makePaymentService MakePaymentService,
 	jsonService JsonService,
 ) *handler {
 	return &handler{
-		paymentService: paymentService,
-		jsonService:    jsonService,
+		makePaymentService: makePaymentService,
+		jsonService:        jsonService,
 	}
 }
 
 type handler struct {
-	paymentService PaymentService
-	jsonService    JsonService
+	makePaymentService MakePaymentService
+	jsonService        JsonService
 }

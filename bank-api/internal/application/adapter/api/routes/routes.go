@@ -15,7 +15,6 @@ type PaymentHandler interface {
 func (s *service) NewRoutes() http.Handler {
 	router := chi.NewRouter()
 
-	// specify who is allowed to connect
 	router.Use(cors.Handler(cors.Options{
 		AllowedOrigins:   []string{"https://*", "http://*"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},

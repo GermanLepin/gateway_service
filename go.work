@@ -2,6 +2,6 @@ go 1.21.1
 
 use (
 	./bank-api
-	./client-service
+	./gateway-service
 	./payment-service
 )

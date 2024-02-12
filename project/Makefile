@@ -1,4 +1,4 @@
-CLIENT_SERVICE_BINARY=binary_file/clientServiceApp
+GATEWAY_SERVICE_BINARY=binary_file/gatewayServiceApp
 PAYMENT_SERVICE_BINARY=binary_file/paymentServiceApp
 BANK_API_BINARY=binary_file/bankAPIApp
 
@@ -10,7 +10,7 @@ run_postgres:
 	@echo "docker images built and started"
 
 ## up_build: stops docker-compose (if running), builds all projects and starts docker compose
-up_build: build_client_service build_payment_service build_bank_api
+up_build: build_gateway_service build_payment_service build_bank_api
 	@echo "stopping docker images (if running...)"
 	docker-compose down
 	@echo "building (when required) and starting docker images..."
@@ -23,10 +23,10 @@ down:
 	docker-compose down
 	@echo "done"
 
-## build_client_service: builds the tech task binary as a linux executable
-build_client_service:
-	@echo "building client service binary..."
-	cd ../client-service && env GOOS=linux CGO_ENABLED=0 go build -o ${CLIENT_SERVICE_BINARY} ./cmd/service
+## build_gateway_service: builds the tech task binary as a linux executable
+build_gateway_service:
+	@echo "building gateway service binary..."
+	cd ../gateway-service && env GOOS=linux CGO_ENABLED=0 go build -o ${GATEWAY_SERVICE_BINARY} ./cmd/service
 	@echo "done"
 
 ## build_payment_service: builds the tech task binary as a linux executable
