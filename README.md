@@ -37,6 +37,30 @@ make up_build
 
 # payment system API
 
+Implemented a creation method. Accepts the user name, email and password.
+POST method.
+
+
+| Key              | Data type | Description     | Example
+|------------------|-----------|-----------------|--------------------- |
+| name             | string    | a user name     | John                 |
+| email            | string    | a user email    | john@gmail.com       |
+| password         | string    | a user password | 1234qwer             |
+
+
+    http://localhost:9000/user/create
+
+
+*Add to the request body (JSON format):*
+```
+{
+	"name":"John",
+	"email":"john@gmail.com",
+	"password":"1234qwer"
+}
+```
+
+
 Implemented a payment method. Accepts the user ID, bank card information, and amount to pay. POST method.
 
 | Key              | Data type | Description                                     | Example
@@ -58,7 +82,6 @@ Implemented a payment method. Accepts the user ID, bank card information, and am
 	"card_holder_name": "NAME NAME",
 	"cvv": 123
   }
-
 ```
 
 *Request response (JSON format):*

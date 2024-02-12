@@ -8,11 +8,12 @@ import (
 	"gateway-service/internal/application/dto"
 
 	"github.com/google/uuid"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type (
 	CretaeUserService interface {
-		CreateUser(ctx context.Context, user dto.CretaeUserRequest) error
+		CreateUser(ctx context.Context, user *dto.User) error
 	}
 
 	JsonService interface {
@@ -23,10 +24,22 @@ type (
 func (h *handler) CretaeUser(w http.ResponseWriter, r *http.Request) {
 	ctx := context.Background()
 
-	var user dto.CretaeUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+	var cretaeUserRequest dto.CretaeUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&cretaeUserRequest); err != nil {
 		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(cretaeUserRequest.Password), 10)
+	if err != nil {
+		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	user := &dto.User{
+		Name:     cretaeUserRequest.Name,
+		Email:    cretaeUserRequest.Email,
+		Password: string(passwordHash),
 	}
 
 	user.ID = uuid.New()
@@ -43,7 +56,7 @@ func (h *handler) CretaeUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	encoder := json.NewEncoder(w)
-	err := encoder.Encode(&cretaeUserResponse)
+	err = encoder.Encode(&cretaeUserResponse)
 	if err != nil {
 		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
 		return

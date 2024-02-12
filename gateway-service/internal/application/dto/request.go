@@ -3,8 +3,9 @@ package dto
 import "github.com/google/uuid"
 
 type CretaeUserRequest struct {
-	ID   uuid.UUID `json:"id"`
-	Name string    `json:"name"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type PaymentRequest struct {
@@ -15,10 +16,4 @@ type PaymentRequest struct {
 	CVV            uint32    `json:"cvv"`
 	CardHolderName string    `json:"card_holder_name"`
 	PaymentStatus  string    `json:"payment_status"`
-}
-
-type DeleteUserRequest struct {
-	UserID  uuid.UUID `json:"user_id"`
-	Name    string    `json:"name"`
-	Message string    `json:"message"`
 }
