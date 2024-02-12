@@ -34,15 +34,18 @@ func (s *service) NewRoutes() http.Handler {
 
 func New(
 	connection *sql.DB,
+
 	paymentHandler PaymentHandler,
 ) *service {
 	return &service{
-		connection:     connection,
+		connection: connection,
+
 		paymentHandler: paymentHandler,
 	}
 }
 
 type service struct {
-	connection     *sql.DB
+	connection *sql.DB
+
 	paymentHandler PaymentHandler
 }
