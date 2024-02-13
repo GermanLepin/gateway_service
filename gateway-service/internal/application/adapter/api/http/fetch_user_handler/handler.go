@@ -1,4 +1,4 @@
-package delete_user_handler
+package fetch_user_handler
 
 import (
 	"context"
@@ -9,12 +9,11 @@ import (
 	"gateway-service/internal/application/dto"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
 )
 
 type (
-	DeleteUserService interface {
-		DeleteUser(ctx context.Context, userID uuid.UUID) error
+	FetchUserService interface {
+		FetchUser(ctx context.Context, userEmail string) (dto.User, error)
 	}
 
 	JsonService interface {
@@ -22,26 +21,24 @@ type (
 	}
 )
 
-func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	userID := chi.URLParam(r, "uuid")
-	userUUID, err := uuid.Parse(userID)
+	userEmail := chi.URLParam(r, "email")
+	user, err := h.fetchUserService.FetchUser(ctx, userEmail)
 	if err != nil {
 		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	err = h.deleteUserService.DeleteUser(ctx, userUUID)
-	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
-		return
-	}
-
-	descriptionMessage := "user deleted successfully"
-	deleteUserResponse := dto.DeleteUserResponse{
-		UserID:  userUUID,
+	descriptionMessage := "user fetched successfully"
+	deleteUserResponse := dto.FetchUserResponse{
+		UserID:  user.ID,
+		Name:    user.Name,
+		Surname: user.Surname,
+		Phone:   user.Phone,
+		Email:   user.Email,
 		Message: descriptionMessage,
 	}
 
@@ -54,16 +51,16 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func New(
-	deleteUserService DeleteUserService,
+	fetchUserService FetchUserService,
 	jsonService JsonService,
 ) *handler {
 	return &handler{
-		deleteUserService: deleteUserService,
-		jsonService:       jsonService,
+		fetchUserService: fetchUserService,
+		jsonService:      jsonService,
 	}
 }
 
 type handler struct {
-	deleteUserService DeleteUserService
-	jsonService       JsonService
+	fetchUserService FetchUserService
+	jsonService      JsonService
 }

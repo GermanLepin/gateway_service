@@ -2,8 +2,10 @@ package dto
 
 import "github.com/google/uuid"
 
-type CretaeUserRequest struct {
+type CreateUserRequest struct {
 	Name     string `json:"name"`
+	Surname  string `json:"surname"`
+	Phone    int    `json:"phone"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }

@@ -10,7 +10,13 @@ import (
 )
 
 func (u *userRepository) CreateUser(ctx context.Context, user *dto.User) error {
-	err := u.db.QueryRow("insert into service.user (id, name, email, password) values ($1,$2,$3,$4);", user.ID, user.Name, user.Email, user.Password)
+	queryString := `
+		insert into service.user 
+		(id, name, surname, phone, email, password) 
+		values ($1,$2,$3,$4,$5,$6)
+	;`
+
+	err := u.db.QueryRow(queryString, user.ID, user.Name, user.Surname, user.Phone, user.Email, user.Password)
 	if err != nil {
 		return err.Err()
 	}
@@ -19,7 +25,9 @@ func (u *userRepository) CreateUser(ctx context.Context, user *dto.User) error {
 }
 
 func (u *userRepository) FetchUserByEmail(ctx context.Context, userEmail string) (user dto.User, err error) {
-	err = u.db.QueryRow("select * from service.user where email = $1;", userEmail).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	queryString := `select * from service.user where email = $1;`
+
+	err = u.db.QueryRow(queryString, userEmail).Scan(&user.ID, &user.Name, &user.Surname, &user.Phone, &user.Email, &user.Password)
 	if err != nil {
 		return user, err
 	}
@@ -28,7 +36,9 @@ func (u *userRepository) FetchUserByEmail(ctx context.Context, userEmail string)
 }
 
 func (u *userRepository) FetchUserById(ctx context.Context, userID uuid.UUID) (user dto.User, err error) {
-	err = u.db.QueryRow("select * from service.user where id = $1;", userID).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	queryString := `select * from service.user where id = $1;`
+
+	err = u.db.QueryRow(queryString, userID).Scan(&user.ID, &user.Name, &user.Surname, &user.Phone, &user.Email, &user.Password)
 	if err != nil {
 		return user, err
 	}

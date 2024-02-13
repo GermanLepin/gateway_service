@@ -37,13 +37,15 @@ make up_build
 
 # payment system API
 
-Implemented a creation method. Accepts an user name, an email and a password.
+Implemented a creation method. Accepts a user's name, a user's surname, a user's mobile phone, a user's email, and a user's password.
 
-| Key              | Data type | Description     | Example
-|------------------|-----------|-----------------|--------------------- |
-| name             | string    | a user name     | John                 |
-| email            | string    | a user email    | john@gmail.com       |
-| password         | string    | a user password | 1234qwer             |
+| Key              | Data type | Description         | Example
+|------------------|-----------|---------------------|--------------------- |
+| name             | string    | a user name         | John                 |
+| surname          | string    | a user surname      | Smith                |
+| phone            | int       | a user phone number | 4912345678901       |
+| email            | string    | a user email        | john@gmail.com       |
+| password         | string    | a user password     | 1234qwer             |
 
 POST method.
 
@@ -53,7 +55,9 @@ POST method.
 *Add to the request body (JSON format):*
 ```
 {
-	"name":"John",
+	"name":"Jonn",
+	"surname": "Smith",
+	"phone": 4912345678901,
 	"email":"john@gmail.com",
 	"password":"1234qwer"
 }

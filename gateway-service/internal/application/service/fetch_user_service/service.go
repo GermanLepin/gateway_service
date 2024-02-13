@@ -5,18 +5,16 @@ import (
 	"fmt"
 
 	"gateway-service/internal/application/dto"
-
-	"github.com/google/uuid"
 )
 
 type UserRepository interface {
-	FetchUserById(ctx context.Context, userID uuid.UUID) (dto.User, error)
+	FetchUserByEmail(ctx context.Context, userEmail string) (dto.User, error)
 }
 
-func (s *service) FetchBalanceInfo(ctx context.Context, userID uuid.UUID) (dto.User, error) {
-	user, err := s.userRepository.FetchUserById(ctx, userID)
+func (s *service) FetchUser(ctx context.Context, userEmail string) (dto.User, error) {
+	user, err := s.userRepository.FetchUserByEmail(ctx, userEmail)
 	if err != nil {
-		return user, fmt.Errorf("cannot fetch the user: %s", userID)
+		return user, fmt.Errorf("cannot fetch the user: %s", userEmail)
 	}
 
 	return user, nil

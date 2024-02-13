@@ -6,6 +6,9 @@ import (
 	"errors"
 
 	"gateway-service/internal/application/dto"
+	"gateway-service/internal/application/helper/logging"
+
+	"go.uber.org/zap"
 )
 
 type UserRepository interface {
@@ -13,7 +16,13 @@ type UserRepository interface {
 }
 
 func (s *service) CreateUser(ctx context.Context, user *dto.User) error {
+	logger := logging.LoggerFromContext(ctx)
+
 	if err := s.userRepository.CreateUser(ctx, user); err != nil {
+		logger.Error(
+			"creation user in database is failed",
+			zap.Error(err),
+		)
 		return errors.New("cannot create a user")
 	}
 

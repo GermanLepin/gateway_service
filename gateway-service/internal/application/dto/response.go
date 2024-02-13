@@ -5,6 +5,17 @@ import "github.com/google/uuid"
 type CreateUserResponse struct {
 	UserID  uuid.UUID `json:"user_id"`
 	Name    string    `json:"name"`
+	Surname string    `json:"surname"`
+	Phone   int       `json:"phone"`
+	Email   string    `json:"email"`
+	Message string    `json:"message"`
+}
+
+type FetchUserResponse struct {
+	UserID  uuid.UUID `json:"user_id"`
+	Name    string    `json:"name"`
+	Surname string    `json:"surname"`
+	Phone   int       `json:"phone"`
 	Email   string    `json:"email"`
 	Message string    `json:"message"`
 }
@@ -12,6 +23,8 @@ type CreateUserResponse struct {
 type LoginResponse struct {
 	UserID   uuid.UUID `json:"user_id"`
 	Name     string    `json:"name"`
+	Surname  string    `json:"surname"`
+	Phone    int       `json:"phone"`
 	Email    string    `json:"email"`
 	JWTToken string    `json:"jwt_token"`
 	Message  string    `json:"message"`
