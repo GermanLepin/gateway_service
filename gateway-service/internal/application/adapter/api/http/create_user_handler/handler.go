@@ -49,9 +49,10 @@ func (h *handler) CretaeUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	descriptionMessage := "user created successfully"
-	cretaeUserResponse := dto.CretaeUserResponse{
+	cretaeUserResponse := dto.CreateUserResponse{
 		UserID:  user.ID,
 		Name:    user.Name,
+		Email:   user.Email,
 		Message: descriptionMessage,
 	}
 

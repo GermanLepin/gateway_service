@@ -2,10 +2,19 @@ package dto
 
 import "github.com/google/uuid"
 
-type CretaeUserResponse struct {
+type CreateUserResponse struct {
 	UserID  uuid.UUID `json:"user_id"`
 	Name    string    `json:"name"`
+	Email   string    `json:"email"`
 	Message string    `json:"message"`
+}
+
+type LoginResponse struct {
+	UserID   uuid.UUID `json:"user_id"`
+	Name     string    `json:"name"`
+	Email    string    `json:"email"`
+	JWTToken string    `json:"jwt_token"`
+	Message  string    `json:"message"`
 }
 
 type PaymentResponse struct {

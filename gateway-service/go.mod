@@ -1,6 +1,6 @@
 module gateway-service
 
-go 1.21.1
+go 1.22
 
 require (
 	github.com/go-chi/chi/v5 v5.0.11
@@ -9,9 +9,7 @@ require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose v2.7.0+incompatible
-)
-
-require (
+	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect
@@ -20,6 +18,6 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
 	github.com/jackc/pgtype v1.14.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	golang.org/x/crypto v0.19.0 // indirect
+	golang.org/x/crypto v0.19.0
 	golang.org/x/text v0.14.0 // indirect
 )

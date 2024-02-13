@@ -1,6 +1,6 @@
 module bank-api
 
-go 1.21.1
+go 1.22
 
 require (
 	github.com/go-chi/chi/v5 v5.0.10
@@ -9,9 +9,6 @@ require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose v2.7.0+incompatible
-)
-
-require (
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

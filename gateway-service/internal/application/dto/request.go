@@ -8,6 +8,11 @@ type CretaeUserRequest struct {
 	Password string `json:"password"`
 }
 
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type PaymentRequest struct {
 	OperationID    uuid.UUID `json:"operation_id"`
 	UserID         uuid.UUID `json:"user_id"`

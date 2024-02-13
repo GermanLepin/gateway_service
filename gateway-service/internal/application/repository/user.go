@@ -17,8 +17,18 @@ func (u *userRepository) CreateUser(ctx context.Context, user *dto.User) error {
 
 	return nil
 }
+
+func (u *userRepository) FetchUserByEmail(ctx context.Context, userEmail string) (user dto.User, err error) {
+	err = u.db.QueryRow("select * from service.user where email = $1;", userEmail).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
+	if err != nil {
+		return user, err
+	}
+
+	return user, nil
+}
+
 func (u *userRepository) FetchUserById(ctx context.Context, userID uuid.UUID) (user dto.User, err error) {
-	err = u.db.QueryRow("select * from service.user where id = $1;", userID).Scan(&user.ID, &user.Name)
+	err = u.db.QueryRow("select * from service.user where id = $1;", userID).Scan(&user.ID, &user.Name, &user.Email, &user.Password)
 	if err != nil {
 		return user, err
 	}

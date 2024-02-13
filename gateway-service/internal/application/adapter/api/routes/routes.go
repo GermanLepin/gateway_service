@@ -13,8 +13,8 @@ type (
 		CretaeUser(w http.ResponseWriter, r *http.Request)
 	}
 
-	DeleteUserHandler interface {
-		DeleteUser(w http.ResponseWriter, r *http.Request)
+	LoginHandler interface {
+		Login(w http.ResponseWriter, r *http.Request)
 	}
 
 	MakePaymentHandler interface {
@@ -23,6 +23,10 @@ type (
 
 	UpdateStatusHandler interface {
 		UpdateStatus(w http.ResponseWriter, r *http.Request)
+	}
+
+	DeleteUserHandler interface {
+		DeleteUser(w http.ResponseWriter, r *http.Request)
 	}
 )
 
@@ -41,6 +45,7 @@ func (s *service) NewRoutes() http.Handler {
 
 	router.Route("/user", func(r chi.Router) {
 		r.Post("/create", s.createUserHandler.CretaeUser)
+		r.Post("/login", s.loginHandler.Login)
 		r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
 	})
 
@@ -55,6 +60,7 @@ func New(
 	connection *sql.DB,
 
 	createUserHandler CreateUserHandler,
+	loginHandler LoginHandler,
 	makePaymentHandler MakePaymentHandler,
 	deleteUserHandler DeleteUserHandler,
 ) *service {
@@ -62,6 +68,7 @@ func New(
 		connection: connection,
 
 		createUserHandler: createUserHandler,
+		loginHandler:      loginHandler,
 		paymentHandler:    makePaymentHandler,
 		deleteUserHandler: deleteUserHandler,
 	}
@@ -71,6 +78,7 @@ type service struct {
 	connection *sql.DB
 
 	createUserHandler CreateUserHandler
+	loginHandler      LoginHandler
 	paymentHandler    MakePaymentHandler
 	deleteUserHandler DeleteUserHandler
 }
