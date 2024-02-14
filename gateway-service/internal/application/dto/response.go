@@ -12,12 +12,13 @@ type CreateUserResponse struct {
 }
 
 type FetchUserResponse struct {
-	UserID  uuid.UUID `json:"user_id"`
-	Name    string    `json:"name"`
-	Surname string    `json:"surname"`
-	Phone   int       `json:"phone"`
-	Email   string    `json:"email"`
-	Message string    `json:"message"`
+	UserID   uuid.UUID `json:"user_id"`
+	Name     string    `json:"name"`
+	Surname  string    `json:"surname"`
+	Phone    int       `json:"phone"`
+	Email    string    `json:"email"`
+	Password string    `json:"password"`
+	Message  string    `json:"message"`
 }
 
 type LoginResponse struct {
@@ -38,8 +39,8 @@ type PaymentResponse struct {
 }
 
 type DeleteUserResponse struct {
-	UserID  uuid.UUID `json:"user_id"`
-	Message string    `json:"message"`
+	Email   string `json:"email"`
+	Message string `json:"message"`
 }
 
 type JsonResponse struct {

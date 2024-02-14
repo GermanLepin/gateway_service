@@ -46,6 +46,15 @@ func (u *userRepository) FetchUserById(ctx context.Context, userID uuid.UUID) (u
 	return user, nil
 }
 
+func (u *userRepository) DeleteUserByEmail(ctx context.Context, userEmail string) error {
+	err := u.db.QueryRow("delete from service.user where email = $1;", userEmail)
+	if err != nil {
+		return err.Err()
+	}
+
+	return nil
+}
+
 func (u *userRepository) DeleteUserById(ctx context.Context, userID uuid.UUID) error {
 	err := u.db.QueryRow("delete from service.user where id = $1;", userID)
 	if err != nil {

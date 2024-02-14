@@ -14,7 +14,6 @@ import (
 	"gateway-service/internal/application/service/create_user_service"
 	"gateway-service/internal/application/service/delete_user_service"
 	"gateway-service/internal/application/service/fetch_user_service"
-	"gateway-service/internal/application/service/json_service"
 	"gateway-service/internal/application/service/login_service"
 	"gateway-service/internal/application/service/payment_service"
 	"os"
@@ -40,8 +39,7 @@ func init() {
 
 func main() {
 	_, ctx := errgroup.WithContext(context.Background())
-
-	ctx, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
+	_, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM, syscall.SIGQUIT, syscall.SIGINT)
 	defer stop()
 
 	_, loggerSyncFunc, err := logging.ZapFromEnv()
@@ -56,18 +54,17 @@ func main() {
 	user_repository := repository.NewUserRepository(connection)
 	payment_repository := repository.NewPaymentRepository(connection)
 
-	json_service := json_service.New()
 	create_user_service := create_user_service.New(user_repository)
 	fetch_user_service := fetch_user_service.New(user_repository)
 	login_service := login_service.New(user_repository)
 	make_payment_service := payment_service.New(payment_repository)
 	delete_user_service := delete_user_service.New(user_repository)
 
-	create_user_handler := create_user_handler.New(create_user_service, json_service)
-	fetch_user_handler := fetch_user_handler.New(fetch_user_service, json_service)
-	login_handler := login_handler.New(login_service, json_service)
-	make_payment_handler := make_payment_handler.New(make_payment_service, json_service)
-	delete_user_handler := delete_user_handler.New(delete_user_service, json_service)
+	create_user_handler := create_user_handler.New(create_user_service)
+	fetch_user_handler := fetch_user_handler.New(fetch_user_service)
+	login_handler := login_handler.New(login_service)
+	make_payment_handler := make_payment_handler.New(make_payment_service)
+	delete_user_handler := delete_user_handler.New(delete_user_service)
 
 	api_routes := routes.New(
 		connection,

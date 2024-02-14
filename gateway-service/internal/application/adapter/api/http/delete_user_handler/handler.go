@@ -7,18 +7,16 @@ import (
 	"time"
 
 	"gateway-service/internal/application/dto"
+	"gateway-service/internal/application/helper/jsonwrapper"
+	"gateway-service/internal/application/helper/logging"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type (
 	DeleteUserService interface {
-		DeleteUser(ctx context.Context, userID uuid.UUID) error
-	}
-
-	JsonService interface {
-		ErrorJSON(w http.ResponseWriter, err error, status ...int) error
+		DeleteUser(ctx context.Context, userEmail string) error
 	}
 )
 
@@ -26,44 +24,46 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	userID := chi.URLParam(r, "uuid")
-	userUUID, err := uuid.Parse(userID)
-	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
-		return
-	}
+	logger := logging.LoggerFromContext(ctx)
+	ctx = logging.ContextWithLogger(ctx, logger)
 
-	err = h.deleteUserService.DeleteUser(ctx, userUUID)
+	userEmail := chi.URLParam(r, "email")
+	logger = logger.With(zap.String("userEmail", userEmail))
+
+	err := h.deleteUserService.DeleteUser(ctx, userEmail)
 	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error(
+			"user deletion is failed",
+			zap.Error(err),
+		)
 		return
 	}
 
 	descriptionMessage := "user deleted successfully"
 	deleteUserResponse := dto.DeleteUserResponse{
-		UserID:  userUUID,
+		Email:   userEmail,
 		Message: descriptionMessage,
 	}
 
 	encoder := json.NewEncoder(w)
 	err = encoder.Encode(&deleteUserResponse)
 	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error(
+			"encoding of create user responce is failed",
+			zap.Error(err),
+		)
 		return
 	}
 }
 
-func New(
-	deleteUserService DeleteUserService,
-	jsonService JsonService,
-) *handler {
+func New(deleteUserService DeleteUserService) *handler {
 	return &handler{
 		deleteUserService: deleteUserService,
-		jsonService:       jsonService,
 	}
 }
 
 type handler struct {
 	deleteUserService DeleteUserService
-	jsonService       JsonService
 }

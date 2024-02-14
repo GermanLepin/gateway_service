@@ -40,11 +40,6 @@ func upInit(tx *sql.Tx) error {
 	return nil
 }
 
-// alter table service.payment_information
-// add constraint fk_user_payment_information
-// foreign key (user_id)
-// references service.user (id);
-
 func downInit(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		delete table service.user;

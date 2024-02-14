@@ -2,6 +2,7 @@ package routes
 
 import (
 	"database/sql"
+	middleware "gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -50,11 +51,12 @@ func (s *service) NewRoutes() http.Handler {
 	router.Route("/user", func(r chi.Router) {
 		r.Post("/create", s.createUserHandler.CreateUser)
 		r.Post("/login", s.loginHandler.Login)
-		r.Get("/fetch/{string}", s.fetchUserHandler.FetchUser)
-		r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
+		r.Get("/fetch/{email}", s.fetchUserHandler.FetchUser)
+		r.Delete("/delete/{email}", s.deleteUserHandler.DeleteUser)
 	})
 
 	router.Route("/", func(r chi.Router) {
+		r.Use(middleware.RequireAuth)
 		r.Post("/payment", s.paymentHandler.MakePayment)
 	})
 

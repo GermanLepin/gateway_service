@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gateway-service/internal/application/dto"
+	"gateway-service/internal/application/helper/jsonwrapper"
 	"gateway-service/internal/application/helper/logging"
 
 	"github.com/google/uuid"
@@ -33,7 +34,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	var createUserRequest dto.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&createUserRequest); err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error(
 			"decoding of create user request is failed",
 			zap.Error(err),
@@ -51,7 +52,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), 10)
 	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error(
 			"password hashing is failed",
 			zap.Error(err),
@@ -69,7 +70,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	user.ID = uuid.New()
 	if err := h.createUserService.CreateUser(ctx, user); err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error(
 			"user creation is failed",
 			zap.Error(err),
@@ -90,7 +91,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	encoder := json.NewEncoder(w)
 	err = encoder.Encode(&createUserResponse)
 	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error(
 			"encoding of create user responce is failed",
 			zap.Error(err),
@@ -99,17 +100,12 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func New(
-	createUserService CreateUserService,
-	jsonService JsonService,
-) *handler {
+func New(createUserService CreateUserService) *handler {
 	return &handler{
 		createUserService: createUserService,
-		jsonService:       jsonService,
 	}
 }
 
 type handler struct {
 	createUserService CreateUserService
-	jsonService       JsonService
 }
