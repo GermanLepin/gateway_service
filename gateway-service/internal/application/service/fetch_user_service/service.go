@@ -11,19 +11,19 @@ import (
 )
 
 type UserRepository interface {
-	FetchUserByEmail(ctx context.Context, userEmail string) (dto.User, error)
+	FetchUserByEmail(ctx context.Context, email string) (dto.User, error)
 }
 
-func (s *service) FetchUser(ctx context.Context, userEmail string) (dto.User, error) {
+func (s *service) FetchUser(ctx context.Context, email string) (dto.User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
-	user, err := s.userRepository.FetchUserByEmail(ctx, userEmail)
+	user, err := s.userRepository.FetchUserByEmail(ctx, email)
 	if err != nil {
 		logger.Error(
 			"fetching user by email in database is failed",
 			zap.Error(err),
 		)
-		return user, fmt.Errorf("cannot fetch the user: %s", userEmail)
+		return user, fmt.Errorf("cannot fetch the user: %s", email)
 	}
 
 	return user, nil

@@ -38,9 +38,7 @@ func ZapFromEnv() (logger *zap.Logger, syncFunc func(), err error) {
 	}
 
 	syncables = append(syncables, logger)
-
 	zap.ReplaceGlobals(logger)
-
 	return logger, func() {
 		for _, s := range syncables {
 			s.Sync()

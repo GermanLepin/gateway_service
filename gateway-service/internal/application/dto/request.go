@@ -1,13 +1,16 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type CreateUserRequest struct {
-	Name     string `json:"name"`
-	Surname  string `json:"surname"`
-	Phone    int    `json:"phone"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Password  string `json:"password"`
+	Email     string `json:"email"`
+	Phone     int    `json:"phone"`
+	UserType  string `json:"user_type"`
 }
 
 type LoginRequest struct {
@@ -15,6 +18,7 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+// TODO payment service
 type PaymentRequest struct {
 	OperationID    uuid.UUID `json:"operation_id"`
 	UserID         uuid.UUID `json:"user_id"`

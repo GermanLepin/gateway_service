@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+// TODO
+
 func (p *paymentRepository) SavePaymentInformation(ctx context.Context, paymentRequest dto.PaymentRequest) error {
 	stmt := `insert into service.payment_information (operation_id, user_id, amount, card_number, card_holder_name, cvv, payment_status) 
 			values ($1, $2, $3, $4, $5, $6, $7);`

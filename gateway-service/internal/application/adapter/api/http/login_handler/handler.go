@@ -13,11 +13,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	LoginService interface {
-		Login(ctx context.Context, loginingUser *dto.User) (dto.User, error)
-	}
-)
+type LoginService interface {
+	Login(ctx context.Context, loginingUser *dto.User) (dto.User, error)
+}
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -54,13 +52,13 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	descriptionMessage := "user logined successfully"
 	loginResponse := dto.LoginResponse{
-		UserID:   user.ID,
-		Name:     user.Name,
-		Surname:  user.Surname,
-		Phone:    user.Phone,
-		Email:    user.Email,
-		JWTToken: user.JWTToken,
-		Message:  descriptionMessage,
+		UserID:    user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		UserType:  user.UserType,
+		Message:   descriptionMessage,
 	}
 
 	cookie := http.Cookie{

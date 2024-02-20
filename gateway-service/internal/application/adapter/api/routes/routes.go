@@ -3,6 +3,7 @@ package routes
 import (
 	"database/sql"
 	middleware "gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
+
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -14,12 +15,12 @@ type (
 		CreateUser(w http.ResponseWriter, r *http.Request)
 	}
 
-	FetchUserHandler interface {
-		FetchUser(w http.ResponseWriter, r *http.Request)
-	}
-
 	LoginHandler interface {
 		Login(w http.ResponseWriter, r *http.Request)
+	}
+
+	FetchUserHandler interface {
+		FetchUser(w http.ResponseWriter, r *http.Request)
 	}
 
 	MakePaymentHandler interface {
@@ -48,16 +49,16 @@ func (s *service) NewRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	router.Route("/user", func(r chi.Router) {
+	router.Route("/v1/user", func(r chi.Router) {
 		r.Post("/create", s.createUserHandler.CreateUser)
 		r.Post("/login", s.loginHandler.Login)
-		r.Get("/fetch/{email}", s.fetchUserHandler.FetchUser)
-		r.Delete("/delete/{email}", s.deleteUserHandler.DeleteUser)
 	})
 
-	router.Route("/", func(r chi.Router) {
+	router.Route("/v1/user/protected", func(r chi.Router) {
 		r.Use(middleware.RequireAuth)
-		r.Post("/payment", s.paymentHandler.MakePayment)
+		r.Get("/fetch/{email}", s.fetchUserHandler.FetchUser)
+		r.Post("/pay", s.paymentHandler.MakePayment)
+		r.Delete("/delete/{email}", s.deleteUserHandler.DeleteUser)
 	})
 
 	return router
@@ -67,8 +68,8 @@ func New(
 	connection *sql.DB,
 
 	createUserHandler CreateUserHandler,
-	fetchUserHandler FetchUserHandler,
 	loginHandler LoginHandler,
+	fetchUserHandler FetchUserHandler,
 	makePaymentHandler MakePaymentHandler,
 	deleteUserHandler DeleteUserHandler,
 ) *service {
@@ -76,8 +77,8 @@ func New(
 		connection: connection,
 
 		createUserHandler: createUserHandler,
-		fetchUserHandler:  fetchUserHandler,
 		loginHandler:      loginHandler,
+		fetchUserHandler:  fetchUserHandler,
 		paymentHandler:    makePaymentHandler,
 		deleteUserHandler: deleteUserHandler,
 	}
@@ -87,8 +88,8 @@ type service struct {
 	connection *sql.DB
 
 	createUserHandler CreateUserHandler
-	fetchUserHandler  FetchUserHandler
 	loginHandler      LoginHandler
+	fetchUserHandler  FetchUserHandler
 	paymentHandler    MakePaymentHandler
 	deleteUserHandler DeleteUserHandler
 }

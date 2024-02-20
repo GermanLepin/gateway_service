@@ -15,15 +15,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-type (
-	CreateUserService interface {
-		CreateUser(ctx context.Context, user *dto.User) error
-	}
-
-	JsonService interface {
-		ErrorJSON(w http.ResponseWriter, err error, status ...int) error
-	}
-)
+type CreateUserService interface {
+	CreateUser(ctx context.Context, user *dto.User) error
+}
 
 func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -43,11 +37,12 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger = logger.With(
-		zap.String("name", createUserRequest.Name),
-		zap.String("surname", createUserRequest.Surname),
-		zap.Int("phone", createUserRequest.Phone),
-		zap.String("email", createUserRequest.Email),
+		zap.String("first_name", createUserRequest.FirstName),
+		zap.String("last_name", createUserRequest.LastName),
 		zap.String("password", createUserRequest.Password),
+		zap.String("email", createUserRequest.Email),
+		zap.Int("phone", createUserRequest.Phone),
+		zap.String("user_type", createUserRequest.UserType),
 	)
 
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), 10)
@@ -61,11 +56,12 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := &dto.User{
-		Name:     createUserRequest.Name,
-		Surname:  createUserRequest.Surname,
-		Phone:    createUserRequest.Phone,
-		Email:    createUserRequest.Email,
-		Password: string(passwordHash),
+		FirstName: createUserRequest.FirstName,
+		LastName:  createUserRequest.LastName,
+		Password:  string(passwordHash),
+		Email:     createUserRequest.Email,
+		Phone:     createUserRequest.Phone,
+		UserType:  createUserRequest.UserType,
 	}
 
 	user.ID = uuid.New()
@@ -80,12 +76,13 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	descriptionMessage := "user created successfully"
 	createUserResponse := dto.CreateUserResponse{
-		UserID:  user.ID,
-		Name:    user.Name,
-		Surname: user.Surname,
-		Phone:   user.Phone,
-		Email:   user.Email,
-		Message: descriptionMessage,
+		UserID:    user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		UserType:  user.UserType,
+		Message:   descriptionMessage,
 	}
 
 	encoder := json.NewEncoder(w)

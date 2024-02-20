@@ -9,18 +9,18 @@ import (
 )
 
 type UserRepository interface {
-	DeleteUserByEmail(ctx context.Context, userEmail string) error
+	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
-func (s *service) DeleteUser(ctx context.Context, userEmail string) error {
+func (s *service) DeleteUser(ctx context.Context, email string) error {
 	logger := logging.LoggerFromContext(ctx)
 
-	if err := s.userRepository.DeleteUserByEmail(ctx, userEmail); err != nil {
+	if err := s.userRepository.DeleteUserByEmail(ctx, email); err != nil {
 		logger.Error(
 			"deletion user in database is failed",
 			zap.Error(err),
 		)
-		return fmt.Errorf("cannot delete the user: %s", userEmail)
+		return fmt.Errorf("cannot delete the user: %s", email)
 	}
 
 	return nil

@@ -14,7 +14,7 @@ import (
 )
 
 type UserRepository interface {
-	FetchUserByEmail(ctx context.Context, userEmail string) (dto.User, error)
+	FetchUserByEmail(ctx context.Context, email string) (dto.User, error)
 }
 
 func (s *service) Login(ctx context.Context, loginingUser *dto.User) (dto.User, error) {
@@ -38,7 +38,7 @@ func (s *service) Login(ctx context.Context, loginingUser *dto.User) (dto.User, 
 		return user, errors.New("login error")
 	}
 
-	jwtToken, err := s.jwtTokenGenerator(ctx, loginingUser)
+	jwtToken, err := s.jwtTokenGenerator(ctx, &user)
 	if err != nil {
 		logger.Error(
 			"jwt token generation is failed",
@@ -57,10 +57,10 @@ func (s *service) jwtTokenGenerator(ctx context.Context, user *dto.User) (jwtTok
 	// generate JWT token
 	expirationTime := time.Now().Add(30 * time.Minute).Unix()
 	jwtClaims := jwt.MapClaims{
-		"user id": user.ID,
-		"email":   user.Email,
-		"name":    user.Name,
-		"exp":     expirationTime,
+		"user_id":    user.ID.String(),
+		"first_name": user.FirstName,
+		"email":      user.Email,
+		"exp":        expirationTime,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)

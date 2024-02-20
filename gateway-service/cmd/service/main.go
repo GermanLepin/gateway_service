@@ -55,22 +55,22 @@ func main() {
 	payment_repository := repository.NewPaymentRepository(connection)
 
 	create_user_service := create_user_service.New(user_repository)
-	fetch_user_service := fetch_user_service.New(user_repository)
 	login_service := login_service.New(user_repository)
+	fetch_user_service := fetch_user_service.New(user_repository)
 	make_payment_service := payment_service.New(payment_repository)
 	delete_user_service := delete_user_service.New(user_repository)
 
 	create_user_handler := create_user_handler.New(create_user_service)
-	fetch_user_handler := fetch_user_handler.New(fetch_user_service)
 	login_handler := login_handler.New(login_service)
+	fetch_user_handler := fetch_user_handler.New(fetch_user_service)
 	make_payment_handler := make_payment_handler.New(make_payment_service)
 	delete_user_handler := delete_user_handler.New(delete_user_service)
 
 	api_routes := routes.New(
 		connection,
 		create_user_handler,
-		fetch_user_handler,
 		login_handler,
+		fetch_user_handler,
 		make_payment_handler,
 		delete_user_handler,
 	)

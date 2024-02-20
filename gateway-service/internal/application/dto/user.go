@@ -1,13 +1,17 @@
 package dto
 
-import "github.com/google/uuid"
+import (
+	"github.com/google/uuid"
+)
 
 type User struct {
-	ID       uuid.UUID
-	Name     string
-	Surname  string
-	Phone    int
-	Email    string
-	JWTToken string
-	Password string
+	ID           uuid.UUID
+	FirstName    string
+	LastName     string
+	Password     string
+	Email        string
+	Phone        int
+	UserType     string
+	JWTToken     string
+	RefreshToken string
 }

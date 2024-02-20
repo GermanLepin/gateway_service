@@ -14,15 +14,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	PaymentService interface {
-		Process(ctx context.Context, paymentRequest dto.PaymentRequest) error
-	}
-
-	JsonService interface {
-		ErrorJSON(w http.ResponseWriter, err error, statusCode int) error
-	}
-)
+type PaymentService interface {
+	Process(ctx context.Context, paymentRequest dto.PaymentRequest) error
+}
 
 func (h *handler) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

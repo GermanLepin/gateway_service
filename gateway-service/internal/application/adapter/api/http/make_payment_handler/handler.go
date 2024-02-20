@@ -15,11 +15,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	MakePaymentService interface {
-		Process(ctx context.Context, w http.ResponseWriter, paymentRequest dto.PaymentRequest) (string, error)
-	}
-)
+type MakePaymentService interface {
+	Process(ctx context.Context, w http.ResponseWriter, paymentRequest dto.PaymentRequest) (string, error)
+}
 
 func (h *handler) MakePayment(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)

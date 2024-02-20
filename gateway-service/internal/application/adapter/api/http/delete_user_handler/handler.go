@@ -14,11 +14,9 @@ import (
 	"go.uber.org/zap"
 )
 
-type (
-	DeleteUserService interface {
-		DeleteUser(ctx context.Context, userEmail string) error
-	}
-)
+type DeleteUserService interface {
+	DeleteUser(ctx context.Context, email string) error
+}
 
 func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
@@ -27,10 +25,10 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	userEmail := chi.URLParam(r, "email")
-	logger = logger.With(zap.String("userEmail", userEmail))
+	email := chi.URLParam(r, "email")
+	logger = logger.With(zap.String("email", email))
 
-	err := h.deleteUserService.DeleteUser(ctx, userEmail)
+	err := h.deleteUserService.DeleteUser(ctx, email)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error(
@@ -42,7 +40,7 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 
 	descriptionMessage := "user deleted successfully"
 	deleteUserResponse := dto.DeleteUserResponse{
-		Email:   userEmail,
+		Email:   email,
 		Message: descriptionMessage,
 	}
 

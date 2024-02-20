@@ -16,11 +16,12 @@ func upInit(tx *sql.Tx) error {
 
 		create table service.user (
 			id uuid not null, 
-			name varchar(100) not null,
-			surname varchar(100) not null,
-			phone bigint not null,
+			first_name varchar(100) not null,
+			last_name varchar(100) not null,
+			password varchar(100) not null,
 			email varchar(100) not null primary key,
-			password varchar(100) not null
+			phone bigint not null,
+			user_type varchar(100) not null
 		);
 
 		create table service.payment_information (
