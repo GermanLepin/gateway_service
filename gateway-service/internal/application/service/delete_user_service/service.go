@@ -3,17 +3,24 @@ package delete_user_service
 import (
 	"context"
 	"fmt"
+	"gateway-service/internal/application/helper/logging"
 
-	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 type UserRepository interface {
-	DeleteUserById(ctx context.Context, userID uuid.UUID) error
+	DeleteUserByEmail(ctx context.Context, email string) error
 }
 
-func (s *service) DeleteUser(ctx context.Context, userID uuid.UUID) error {
-	if err := s.userRepository.DeleteUserById(ctx, userID); err != nil {
-		return fmt.Errorf("cannot delete the user: %s", userID)
+func (s *service) DeleteUser(ctx context.Context, email string) error {
+	logger := logging.LoggerFromContext(ctx)
+
+	if err := s.userRepository.DeleteUserByEmail(ctx, email); err != nil {
+		logger.Error(
+			"deletion user in database is failed",
+			zap.Error(err),
+		)
+		return fmt.Errorf("cannot delete the user: %s", email)
 	}
 
 	return nil

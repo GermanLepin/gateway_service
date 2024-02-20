@@ -4,63 +4,105 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"time"
 
 	"gateway-service/internal/application/dto"
+	"gateway-service/internal/application/helper/jsonwrapper"
+	"gateway-service/internal/application/helper/logging"
 
 	"github.com/google/uuid"
+	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
 )
 
-type (
-	CretaeUserService interface {
-		CreateUser(ctx context.Context, user dto.CretaeUserRequest) error
-	}
+type CreateUserService interface {
+	CreateUser(ctx context.Context, user *dto.User) error
+}
 
-	JsonService interface {
-		ErrorJSON(w http.ResponseWriter, err error, status ...int) error
-	}
-)
+func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
 
-func (h *handler) CretaeUser(w http.ResponseWriter, r *http.Request) {
-	ctx := context.Background()
+	logger := logging.LoggerFromContext(ctx)
+	ctx = logging.ContextWithLogger(ctx, logger)
 
-	var user dto.CretaeUserRequest
-	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+	var createUserRequest dto.CreateUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&createUserRequest); err != nil {
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error(
+			"decoding of create user request is failed",
+			zap.Error(err),
+		)
 		return
 	}
 
+	logger = logger.With(
+		zap.String("first_name", createUserRequest.FirstName),
+		zap.String("last_name", createUserRequest.LastName),
+		zap.String("password", createUserRequest.Password),
+		zap.String("email", createUserRequest.Email),
+		zap.Int("phone", createUserRequest.Phone),
+		zap.String("user_type", createUserRequest.UserType),
+	)
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), 10)
+	if err != nil {
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error(
+			"password hashing is failed",
+			zap.Error(err),
+		)
+		return
+	}
+
+	user := &dto.User{
+		FirstName: createUserRequest.FirstName,
+		LastName:  createUserRequest.LastName,
+		Password:  string(passwordHash),
+		Email:     createUserRequest.Email,
+		Phone:     createUserRequest.Phone,
+		UserType:  createUserRequest.UserType,
+	}
+
 	user.ID = uuid.New()
-	if err := h.cretaeUserService.CreateUser(ctx, user); err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+	if err := h.createUserService.CreateUser(ctx, user); err != nil {
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error(
+			"user creation is failed",
+			zap.Error(err),
+		)
 		return
 	}
 
 	descriptionMessage := "user created successfully"
-	cretaeUserResponse := dto.CretaeUserResponse{
-		UserID:  user.ID,
-		Name:    user.Name,
-		Message: descriptionMessage,
+	createUserResponse := dto.CreateUserResponse{
+		UserID:    user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		UserType:  user.UserType,
+		Message:   descriptionMessage,
 	}
 
 	encoder := json.NewEncoder(w)
-	err := encoder.Encode(&cretaeUserResponse)
+	err = encoder.Encode(&createUserResponse)
 	if err != nil {
-		h.jsonService.ErrorJSON(w, err, http.StatusInternalServerError)
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error(
+			"encoding of create user responce is failed",
+			zap.Error(err),
+		)
 		return
 	}
 }
 
-func New(
-	cretaeUserService CretaeUserService,
-	jsonService JsonService,
-) *handler {
+func New(createUserService CreateUserService) *handler {
 	return &handler{
-		cretaeUserService: cretaeUserService,
-		jsonService:       jsonService,
+		createUserService: createUserService,
 	}
 }
 
 type handler struct {
-	cretaeUserService CretaeUserService
-	jsonService       JsonService
+	createUserService CreateUserService
 }

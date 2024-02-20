@@ -14,9 +14,14 @@ func upInit(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		create schema service;
 
-		create table service.users (
-			id uuid not null primary key, 
-			name varchar(100) not null
+		create table service.user (
+			id uuid not null, 
+			first_name varchar(100) not null,
+			last_name varchar(100) not null,
+			password varchar(100) not null,
+			email varchar(100) not null primary key,
+			phone bigint not null,
+			user_type varchar(100) not null
 		);
 
 		create table service.payment_information (
@@ -38,7 +43,7 @@ func upInit(tx *sql.Tx) error {
 
 func downInit(tx *sql.Tx) error {
 	_, err := tx.Exec(`
-		delete table service.users;
+		delete table service.user;
 		delete table service.payment_information;
 
 		drop schema service;

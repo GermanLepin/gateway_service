@@ -1,9 +1,8 @@
-package create_user_service
+package fetch_user_service
 
 import (
 	"context"
-
-	"errors"
+	"fmt"
 
 	"gateway-service/internal/application/dto"
 	"gateway-service/internal/application/helper/logging"
@@ -12,21 +11,22 @@ import (
 )
 
 type UserRepository interface {
-	CreateUser(ctx context.Context, user *dto.User) error
+	FetchUserByEmail(ctx context.Context, email string) (dto.User, error)
 }
 
-func (s *service) CreateUser(ctx context.Context, user *dto.User) error {
+func (s *service) FetchUser(ctx context.Context, email string) (dto.User, error) {
 	logger := logging.LoggerFromContext(ctx)
 
-	if err := s.userRepository.CreateUser(ctx, user); err != nil {
+	user, err := s.userRepository.FetchUserByEmail(ctx, email)
+	if err != nil {
 		logger.Error(
-			"creation user in database is failed",
+			"fetching user by email in database is failed",
 			zap.Error(err),
 		)
-		return errors.New("cannot create a user")
+		return user, fmt.Errorf("cannot fetch the user: %s", email)
 	}
 
-	return nil
+	return user, nil
 }
 
 func New(userRepository UserRepository) *service {

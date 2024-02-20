@@ -1,4 +1,4 @@
-package json_service
+package jsonwrapper
 
 import (
 	"encoding/json"
@@ -7,7 +7,7 @@ import (
 	"gateway-service/internal/application/dto"
 )
 
-func (s *service) ErrorJSON(w http.ResponseWriter, err error, status ...int) error {
+func ErrorJSON(w http.ResponseWriter, err error, status ...int) error {
 	statusCode := http.StatusBadRequest
 
 	if len(status) > 0 {
@@ -18,10 +18,10 @@ func (s *service) ErrorJSON(w http.ResponseWriter, err error, status ...int) err
 	payload.Error = true
 	payload.Message = err.Error()
 
-	return s.WriteJSON(w, statusCode, payload)
+	return WriteJSON(w, statusCode, payload)
 }
 
-func (s *service) WriteJSON(w http.ResponseWriter, status int, data any, headers ...http.Header) error {
+func WriteJSON(w http.ResponseWriter, status int, data any, headers ...http.Header) error {
 	out, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -34,17 +34,11 @@ func (s *service) WriteJSON(w http.ResponseWriter, status int, data any, headers
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
+	w.WriteHeader(status)
 	_, err = w.Write(out)
 	if err != nil {
 		return err
 	}
 
 	return nil
-}
-
-type service struct{}
-
-func New() *service {
-	return &service{}
 }

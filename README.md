@@ -6,11 +6,12 @@ I have designed the microservices interaction, and there are three services:
 - bank-api is an imitation of an external banking service with which we communicate using the REST API. You can check this out on the scheme at the very bottom.
 
 What I already did:
-1. user creation handler `/user/create`
-2. user deletion handler `/user/delete/{uuid}`
-3. payment handler `/payment` 
-4. start all databases and all servers using only one command
-5. migrations
+1. user creation handler `v1/user/create`
+2. user logging handler `v1/user/login`
+3. user deletion handler `v1/user/delete/{uuid}`
+4. user fetching handler `v1/user/fetch/{uuid}`
+5. start all databases and all servers using only one command
+6. migrations
 
 What I am planning to do:
 1. cover the code with unit tests and e2e tests
@@ -35,9 +36,53 @@ Let's start all services and databases with the command:
 make up_build
 ```
 
+// TODO Swagger
 # payment system API
 
-Implemented a payment method. Accepts the user ID, bank card information, and amount to pay. POST method.
+type User struct {
+	ID           uuid.UUID
+	FirstName    string
+	LastName     string
+	Password     string
+	Email        string
+	Phone        int
+	UserType     string
+	JWTToken     string
+	RefreshToken string
+}
+
+
+Implemented a creation method. Accepts a user name, a user last name, a user phone number, a user email, and a user password.
+
+| Key              | Data type | Description         | Example
+|------------------|-----------|---------------------|--------------------- |
+| first_name       | string    | a user first name   | John                 |
+| last_name        | string    | a user last name    | Smith                |
+| password         | string    | a user password     | 1234qwer             |
+| email            | string    | a user email        | john@gmail.com       |
+| phone            | int       | a user phone number | 4912345678901        |
+| user_type        | string    | a user type         | admin/user           |
+
+
+POST method.
+
+    http://localhost:9000/v1/user/create
+
+
+*Add to the request body (JSON format):*
+```
+{
+	"first_name":"Jonn",
+	"last_name": "Smith",
+	"password":"1234qwer",
+	"email":"john@gmail.com",
+	"phone": 4912345678901,
+	"user_type":"user"
+}
+```
+
+
+Implemented a payment method. Accepts the user ID, bank card information, and amount to pay. 
 
 | Key              | Data type | Description                                     | Example
 |------------------|-----------|-------------------------------------------------|----------- |
@@ -47,7 +92,9 @@ Implemented a payment method. Accepts the user ID, bank card information, and am
 | card_holder_name | string    | a card holder name                              | NAME NAME  |
 | cvv              | uint32    | a cvv of the card                               | 123        |
 
-    http://localhost:9000/payment
+POST method.
+
+    http://localhost:9000/v1/payment/transaction
 
 *Add to the request body (JSON format):*
 ```
@@ -58,7 +105,6 @@ Implemented a payment method. Accepts the user ID, bank card information, and am
 	"card_holder_name": "NAME NAME",
 	"cvv": 123
   }
-
 ```
 
 *Request response (JSON format):*

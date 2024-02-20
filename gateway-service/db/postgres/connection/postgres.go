@@ -1,6 +1,7 @@
 package connection
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -8,8 +9,10 @@ import (
 	"time"
 
 	_ "gateway-service/db/postgres/changelog"
+	"gateway-service/internal/application/helper/logging"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
+	"go.uber.org/zap"
 
 	"github.com/pressly/goose"
 )
@@ -19,6 +22,12 @@ var (
 )
 
 func StartDB() *sql.DB {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	logger := logging.LoggerFromContext(ctx)
+	ctx = logging.ContextWithLogger(ctx, logger)
+
 	dsn := fmt.Sprintf(
 		"host=%s port=%s user=%s password=%s  database=%s sslmode=disable timezone=UTC connect_timeout=5",
 		os.Getenv("PG_HOST"),
@@ -28,13 +37,13 @@ func StartDB() *sql.DB {
 		os.Getenv("PG_DATABASE"),
 	)
 
-	conn := connectToDB(dsn)
+	conn := connectToDB(ctx, dsn)
 	if conn == nil {
-		log.Panic("cannot connect to Postgres")
+		logger.Panic("cannot connect to Postgres")
 	}
 
 	if err := goose.Up(conn, "/var"); err != nil {
-		log.Panic("cannot run the migrations")
+		logger.Panic("cannot run the migrations")
 	}
 
 	// if smth goes wrong we always can run down Migrations goose.Down()
@@ -45,11 +54,13 @@ func StartDB() *sql.DB {
 	return conn
 }
 
-func connectToDB(dsn string) *sql.DB {
-	var counts int64
+func connectToDB(ctx context.Context, dsn string) *sql.DB {
+	logger := logging.LoggerFromContext(ctx)
+	ctx = logging.ContextWithLogger(ctx, logger)
 
+	var counts int64
 	for {
-		connection, err := openDB(dsn)
+		connection, err := openDB(ctx, dsn)
 		if err != nil {
 			log.Println("postgres is not ready yet")
 			counts++
@@ -59,7 +70,7 @@ func connectToDB(dsn string) *sql.DB {
 		}
 
 		if counts > 10 {
-			log.Println(err)
+			logger.Error("cannot connect to database", zap.Error(err))
 			return nil
 		}
 
@@ -69,9 +80,12 @@ func connectToDB(dsn string) *sql.DB {
 	}
 }
 
-func openDB(dsn string) (*sql.DB, error) {
+func openDB(ctx context.Context, dsn string) (*sql.DB, error) {
+	logger := logging.LoggerFromContext(ctx)
+
 	conn, err := sql.Open(driver, dsn)
 	if err != nil {
+		logger.Error("connection open is failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -80,6 +94,7 @@ func openDB(dsn string) (*sql.DB, error) {
 	conn.SetConnMaxLifetime(5 * time.Minute)
 
 	if err = conn.Ping(); err != nil {
+		logger.Error("ddatabase ping is failed", zap.Error(err))
 		return nil, err
 	}
 
