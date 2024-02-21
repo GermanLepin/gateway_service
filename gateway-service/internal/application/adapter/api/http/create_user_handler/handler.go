@@ -3,12 +3,13 @@ package create_user_handler
 import (
 	"context"
 	"encoding/json"
+
+	"gateway-service/gateway-service/internal/application/dto"
+	"gateway-service/gateway-service/internal/application/helper/jsonwrapper"
+	"gateway-service/gateway-service/internal/application/helper/logging"
+
 	"net/http"
 	"time"
-
-	"gateway-service/internal/application/dto"
-	"gateway-service/internal/application/helper/jsonwrapper"
-	"gateway-service/internal/application/helper/logging"
 
 	"github.com/google/uuid"
 	"go.uber.org/zap"
@@ -29,10 +30,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var createUserRequest dto.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&createUserRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error(
-			"decoding of create user request is failed",
-			zap.Error(err),
-		)
+		logger.Error("decoding of create user request is failed", zap.Error(err))
 		return
 	}
 
@@ -48,10 +46,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	passwordHash, err := bcrypt.GenerateFromPassword([]byte(createUserRequest.Password), 10)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error(
-			"password hashing is failed",
-			zap.Error(err),
-		)
+		logger.Error("password hashing is failed", zap.Error(err))
 		return
 	}
 
@@ -67,10 +62,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.ID = uuid.New()
 	if err := h.createUserService.CreateUser(ctx, user); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error(
-			"user creation is failed",
-			zap.Error(err),
-		)
+		logger.Error("user creation is failed", zap.Error(err))
 		return
 	}
 
@@ -89,10 +81,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	err = encoder.Encode(&createUserResponse)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error(
-			"encoding of create user responce is failed",
-			zap.Error(err),
-		)
+		logger.Error("encoding of create user responce is failed", zap.Error(err))
 		return
 	}
 }

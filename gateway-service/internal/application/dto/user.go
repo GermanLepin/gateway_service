@@ -12,6 +12,6 @@ type User struct {
 	Email        string
 	Phone        int
 	UserType     string
-	JWTToken     string
+	AccessToken  string
 	RefreshToken string
 }

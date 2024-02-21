@@ -2,9 +2,10 @@ package jsonwrapper
 
 import (
 	"encoding/json"
-	"net/http"
 
-	"gateway-service/internal/application/dto"
+	"gateway-service/gateway-service/internal/application/dto"
+
+	"net/http"
 )
 
 func ErrorJSON(w http.ResponseWriter, err error, status ...int) error {

@@ -2,7 +2,7 @@ package routes
 
 import (
 	"database/sql"
-	middleware "gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
+	middleware "gateway-service/gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
 
 	"net/http"
 
@@ -21,14 +21,6 @@ type (
 
 	FetchUserHandler interface {
 		FetchUser(w http.ResponseWriter, r *http.Request)
-	}
-
-	MakePaymentHandler interface {
-		MakePayment(w http.ResponseWriter, r *http.Request)
-	}
-
-	UpdateStatusHandler interface {
-		UpdateStatus(w http.ResponseWriter, r *http.Request)
 	}
 
 	DeleteUserHandler interface {
@@ -57,7 +49,6 @@ func (s *service) NewRoutes() http.Handler {
 	router.Route("/v1/user/protected", func(r chi.Router) {
 		r.Use(middleware.RequireAuth)
 		r.Get("/fetch/{email}", s.fetchUserHandler.FetchUser)
-		r.Post("/pay", s.paymentHandler.MakePayment)
 		r.Delete("/delete/{email}", s.deleteUserHandler.DeleteUser)
 	})
 
@@ -70,7 +61,6 @@ func New(
 	createUserHandler CreateUserHandler,
 	loginHandler LoginHandler,
 	fetchUserHandler FetchUserHandler,
-	makePaymentHandler MakePaymentHandler,
 	deleteUserHandler DeleteUserHandler,
 ) *service {
 	return &service{
@@ -79,7 +69,6 @@ func New(
 		createUserHandler: createUserHandler,
 		loginHandler:      loginHandler,
 		fetchUserHandler:  fetchUserHandler,
-		paymentHandler:    makePaymentHandler,
 		deleteUserHandler: deleteUserHandler,
 	}
 }
@@ -90,6 +79,5 @@ type service struct {
 	createUserHandler CreateUserHandler
 	loginHandler      LoginHandler
 	fetchUserHandler  FetchUserHandler
-	paymentHandler    MakePaymentHandler
 	deleteUserHandler DeleteUserHandler
 }

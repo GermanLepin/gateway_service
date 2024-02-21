@@ -3,19 +3,21 @@ package fetch_user_handler
 import (
 	"context"
 	"encoding/json"
+
+	"gateway-service/gateway-service/internal/application/dto"
+	"gateway-service/gateway-service/internal/application/helper/jsonwrapper"
+	"gateway-service/gateway-service/internal/application/helper/logging"
+
 	"net/http"
 	"time"
 
-	"gateway-service/internal/application/dto"
-	"gateway-service/internal/application/helper/jsonwrapper"
-	"gateway-service/internal/application/helper/logging"
-
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type FetchUserService interface {
-	FetchUser(ctx context.Context, email string) (dto.User, error)
+	FetchUser(ctx context.Context, userId uuid.UUID) (dto.User, error)
 }
 
 func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
@@ -25,16 +27,19 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	email := chi.URLParam(r, "email")
-
-	logger = logger.With(zap.String("email", email))
-	user, err := h.fetchUserService.FetchUser(ctx, email)
+	userId := chi.URLParam(r, "uuid")
+	userUUID, err := uuid.Parse(userId)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error(
-			"user fetching is failed",
-			zap.Error(err),
-		)
+		logger.Error("user id parsing is failed", zap.Error(err))
+		return
+	}
+
+	logger = logger.With(zap.String("uuid", userId))
+	user, err := h.fetchUserService.FetchUser(ctx, userUUID)
+	if err != nil {
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error("user fetching is failed", zap.Error(err))
 		return
 	}
 
@@ -63,10 +68,7 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 	err = encoder.Encode(&deleteUserResponse)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error(
-			"encoding of create user responce is failed",
-			zap.Error(err),
-		)
+		logger.Error("encoding of create user responce is failed", zap.Error(err))
 		return
 	}
 }

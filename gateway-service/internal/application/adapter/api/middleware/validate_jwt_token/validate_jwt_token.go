@@ -3,8 +3,10 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"gateway-service/internal/application/helper/jsonwrapper"
-	"gateway-service/internal/application/helper/logging"
+
+	"gateway-service/gateway-service/internal/application/helper/jsonwrapper"
+	"gateway-service/gateway-service/internal/application/helper/logging"
+
 	"net/http"
 	"os"
 	"time"
