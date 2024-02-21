@@ -4,12 +4,12 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+
+	"gateway-service/gateway-service/internal/application/helper/logging"
+
 	"log"
 	"os"
 	"time"
-
-	_ "gateway-service/db/postgres/changelog"
-	"gateway-service/internal/application/helper/logging"
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"go.uber.org/zap"

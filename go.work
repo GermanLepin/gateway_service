@@ -1,7 +1,0 @@
-go 1.22
-
-use (
-	./bank-api
-	./gateway-service
-	./payment-service
-)
