@@ -24,5 +24,5 @@ down:
 ## build_gateway_service: builds the tech task binary as a linux executable
 build_gateway_service:
 	@echo "building gateway service binary..."
-	cd ../gateway-service && env GOOS=linux CGO_ENABLED=0 go build -o ${GATEWAY_SERVICE_BINARY} ./cmd/service
+	cd ../ && env GOOS=linux CGO_ENABLED=0 go build -o ${GATEWAY_SERVICE_BINARY} ./cmd/service
 	@echo "done"

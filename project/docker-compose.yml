@@ -3,8 +3,8 @@ version: "3.8"
 services:
   gateway-service:
     build:
-      context: ./../gateway-service
-      dockerfile: ./../gateway-service/gateway-service.dockerfile
+      context: ./..
+      dockerfile: ./gateway-service.dockerfile
     ports:
       - "9000:80"
     deploy:
