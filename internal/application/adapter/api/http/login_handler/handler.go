@@ -15,7 +15,7 @@ import (
 )
 
 type LoginService interface {
-	Login(ctx context.Context, loginingUser *dto.User) (dto.User, error)
+	Login(ctx context.Context, loginingUser *dto.User) (dto.User, dto.Session, error)
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -32,13 +32,13 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger = logger.With(zap.String("email", loginRequest.UserID.String()))
+	logger = logger.With(zap.String("uuid", loginRequest.UserID.String()))
 	loginingUser := &dto.User{
 		ID:       loginRequest.UserID,
 		Password: loginRequest.Password,
 	}
 
-	user, err := h.loginService.Login(ctx, loginingUser)
+	user, session, err := h.loginService.Login(ctx, loginingUser)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))
@@ -69,17 +69,22 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookieWithRefreshToken)
 
-	descriptionMessage := "user logined successfully"
+	userResponse := dto.UserResponse{
+		UserID:    user.ID,
+		FirstName: user.FirstName,
+		LastName:  user.LastName,
+		Email:     user.Email,
+		Phone:     user.Phone,
+		UserType:  user.UserType,
+	}
+
 	loginResponse := dto.LoginResponse{
-		UserID:       user.ID,
-		FirstName:    user.FirstName,
-		LastName:     user.LastName,
-		Email:        user.Email,
-		Phone:        user.Phone,
-		UserType:     user.UserType,
-		AccessToken:  user.AccessToken,
-		RefreshToken: user.RefreshToken,
-		Message:      descriptionMessage,
+		SessionID:             session.ID,
+		AccessToken:           user.AccessToken,
+		AccessTokenExpiresAt:  user.AccessTokenExpiresAt,
+		RefreshToken:          user.RefreshToken,
+		RefreshTokenExpiresAt: session.RefreshTokenExpiresAt,
+		User:                  userResponse,
 	}
 
 	encoder := json.NewEncoder(w)

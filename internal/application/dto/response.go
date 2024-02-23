@@ -1,6 +1,8 @@
 package dto
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 )
 
@@ -11,29 +13,24 @@ type CreateUserResponse struct {
 	Email     string    `json:"email"`
 	Phone     int       `json:"phone"`
 	UserType  string    `json:"user_type"`
-	Message   string    `json:"message"`
 }
 
 type LoginResponse struct {
-	UserID       uuid.UUID `json:"user_id"`
-	FirstName    string    `json:"first_name"`
-	LastName     string    `json:"last_name"`
-	Email        string    `json:"email"`
-	Phone        int       `json:"phone"`
-	UserType     string    `json:"user_type"`
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	Message      string    `json:"message"`
+	SessionID             uuid.UUID    `json:"session_id"`
+	AccessToken           string       `json:"access_token"`
+	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+	RefreshToken          string       `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
+	User                  UserResponse `json:"user"`
 }
 
-type FetchUserResponse struct {
+type UserResponse struct {
 	UserID    uuid.UUID `json:"user_id"`
 	FirstName string    `json:"first_name"`
 	LastName  string    `json:"last_name"`
 	Email     string    `json:"email"`
 	Phone     int       `json:"phone"`
 	UserType  string    `json:"user_type"`
-	Message   string    `json:"message"`
 }
 
 type DeleteUserResponse struct {

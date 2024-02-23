@@ -15,12 +15,8 @@ func upSessions(tx *sql.Tx) error {
 		create table service.sessions (
 			id uuid primary key, 
 			user_id uuid not null,
-			first_name varchar(100) not null,
-			last_name varchar(100) not null,
-			user_type varchar(100) not null,
-			user_agent varchar(100) not null,
-			client_ip varchar(100) not null,
 			is_blocked boolean not null default false,
+			refresh_token varchar not null,
 			expires_at timestamptz not null,
 			created_at timestamptz not null default (now())
 		);

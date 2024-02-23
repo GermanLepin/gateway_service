@@ -53,15 +53,13 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 		zap.String("user_type", user.UserType),
 	)
 
-	descriptionMessage := "user fetched successfully"
-	deleteUserResponse := dto.FetchUserResponse{
+	deleteUserResponse := dto.UserResponse{
 		UserID:    user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Email:     user.Email,
 		Phone:     user.Phone,
 		UserType:  user.UserType,
-		Message:   descriptionMessage,
 	}
 
 	encoder := json.NewEncoder(w)

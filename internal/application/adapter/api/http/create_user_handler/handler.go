@@ -66,7 +66,6 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	descriptionMessage := "user created successfully"
 	createUserResponse := dto.CreateUserResponse{
 		UserID:    user.ID,
 		FirstName: user.FirstName,
@@ -74,7 +73,6 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Email:     user.Email,
 		Phone:     user.Phone,
 		UserType:  user.UserType,
-		Message:   descriptionMessage,
 	}
 
 	encoder := json.NewEncoder(w)
