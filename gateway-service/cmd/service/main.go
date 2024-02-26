@@ -1,10 +1,10 @@
 package main
 
 import (
+	"auth-service/db/postgres/connection"
 	"context"
 	"fmt"
 
-	"gateway-service/db/postgres/connection"
 	"gateway-service/internal/application/adapter/api/http/create_user_handler"
 	"gateway-service/internal/application/adapter/api/http/delete_user_handler"
 	"gateway-service/internal/application/adapter/api/http/fetch_user_handler"

@@ -2,7 +2,6 @@ package routes
 
 import (
 	"database/sql"
-	middleware "gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
 
 	"net/http"
 
@@ -46,15 +45,14 @@ func (s *service) NewRoutes() http.Handler {
 	}))
 
 	router.Route("/v1/api/user", func(r chi.Router) {
-		r.Post("/create", s.createUserHandler.CreateUser)
-		r.Post("/login", s.loginHandler.Login)
-		//r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
+		//r.Post("/create", s.createUserHandler.CreateUser)
+		// r.Post("/login", s.loginHandler.Login)
+		// r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
 	})
 
 	router.Route("/v1/api/user/protected", func(r chi.Router) {
-		r.Use(middleware.RequireAuth)
-		r.Get("/fetch/{uuid}", s.fetchUserHandler.FetchUser)
-		r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
+		// r.Get("/fetch/{uuid}", s.fetchUserHandler.FetchUser)
+		// r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
 		// to do /logout
 	})
 
@@ -64,29 +62,29 @@ func (s *service) NewRoutes() http.Handler {
 func New(
 	connection *sql.DB,
 
-	createUserHandler CreateUserHandler,
-	loginHandler LoginHandler,
-	//refreshTokenHandler RefreshTokenHandler,
-	fetchUserHandler FetchUserHandler,
-	deleteUserHandler DeleteUserHandler,
+	// createUserHandler CreateUserHandler,
+	// loginHandler LoginHandler,
+	// refreshTokenHandler RefreshTokenHandler,
+	// fetchUserHandler FetchUserHandler,
+	// deleteUserHandler DeleteUserHandler,
 ) *service {
 	return &service{
-		connection: connection,
+		// connection: connection,
 
-		createUserHandler: createUserHandler,
-		loginHandler:      loginHandler,
-		//refreshTokenHandler: refreshTokenHandler,
-		fetchUserHandler:  fetchUserHandler,
-		deleteUserHandler: deleteUserHandler,
+		// createUserHandler:   createUserHandler,
+		// loginHandler:        loginHandler,
+		// refreshTokenHandler: refreshTokenHandler,
+		// fetchUserHandler:    fetchUserHandler,
+		// deleteUserHandler:   deleteUserHandler,
 	}
 }
 
 type service struct {
-	connection *sql.DB
+	// 	connection *sql.DB
 
-	createUserHandler CreateUserHandler
-	loginHandler      LoginHandler
-	//refreshTokenHandler RefreshTokenHandler
-	fetchUserHandler  FetchUserHandler
-	deleteUserHandler DeleteUserHandler
+	// createUserHandler   CreateUserHandler
+	// loginHandler        LoginHandler
+	// refreshTokenHandler RefreshTokenHandler
+	// fetchUserHandler    FetchUserHandler
+	// deleteUserHandler   DeleteUserHandler
 }

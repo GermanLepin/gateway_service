@@ -20,8 +20,6 @@ func upSessions(tx *sql.Tx) error {
 			expires_at timestamptz not null,
 			created_at timestamptz not null default (now())
 		);
-
-		alter table service.sessions add foreign key ("user_id") references service.users ("id");		
 	`)
 	if err != nil {
 		return err

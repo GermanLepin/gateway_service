@@ -3,16 +3,27 @@ version: "3.8"
 services:
   gateway-service:
     build:
-      context: ./..
-      dockerfile: ./gateway-service.dockerfile
+      context: ./../gateway-service
+      dockerfile: ./../gateway-service/gateway-service.dockerfile
     ports:
-      - "9000:80"
+      - "9999:80"
     deploy:
       mode: replicated
       replicas: 1
     restart: always
 
-  postgres-1:
+  auth-service:
+    build:
+      context: ./../auth-service
+      dockerfile: ./../auth-service/auth-service.dockerfile
+    ports:
+      - "8999:80"
+    deploy:
+      mode: replicated
+      replicas: 1
+    restart: always
+
+  postgres-gateway:
     image: 'postgres:14.2'
     ports:
       - "5432:5432"
@@ -25,5 +36,20 @@ services:
       POSTGRES_DB: gateway-service
     restart: always
     volumes:
-      - ./db-data/postgres-1/:/var/lib/postgresql/data/
+      - ./db-data/postgres-gateway/:/var/lib/postgresql/data/
+
+  postgres-auth:
+    image: 'postgres:14.2'
+    ports:
+      - "6432:5432"
+    deploy:
+      mode: replicated
+      replicas: 1
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: auth-service
+    restart: always
+    volumes:
+      - ./db-data/postgres-auth/:/var/lib/postgresql/data/
   

@@ -10,9 +10,12 @@ require (
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/joho/godotenv v1.5.1
 	github.com/pressly/goose v2.7.0+incompatible
-	go.uber.org/zap v1.27.0
-	golang.org/x/crypto v0.19.0
 	golang.org/x/sync v0.6.0
+)
+
+require (
+	github.com/pkg/errors v0.9.1 // indirect
+	go.uber.org/multierr v1.11.0 // indirect
 )
 
 require (
@@ -23,7 +26,7 @@ require (
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20231201235250-de7065d80cb9 // indirect
 	github.com/jackc/pgtype v1.14.2 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
-	go.uber.org/multierr v1.11.0 // indirect
+	go.uber.org/zap v1.27.0
+	golang.org/x/crypto v0.20.0
 	golang.org/x/text v0.14.0 // indirect
 )

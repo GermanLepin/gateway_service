@@ -1,23 +1,19 @@
 package connection
 
 import (
+	_ "auth-service/db/postgres/changelog"
+	"auth-service/internal/application/helper/logging"
+
 	"context"
 	"database/sql"
 	"fmt"
-
-	"gateway-service/internal/application/helper/logging"
-
 	"log"
 	"os"
 	"time"
 
-	_ "gateway-service/db/postgres/changelog"
-
 	_ "github.com/jackc/pgx/v4/stdlib"
-
-	"go.uber.org/zap"
-
 	"github.com/pressly/goose"
+	"go.uber.org/zap"
 )
 
 var (
