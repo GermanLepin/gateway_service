@@ -62,7 +62,7 @@ POST method.
 *Responce from the create request (JSON format):*
 ```
 {
-	"user_id": "da4fe86c-e4d3-41c0-a856-40080c4031f5",
+	"user_id": "6d9be29e-ab8b-46ec-88d7-780c180370a6",
 	"first_name": "Jonn",
 	"last_name": "Smith",
 	"email": "john@gmail.com",
