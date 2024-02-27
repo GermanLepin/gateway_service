@@ -30,10 +30,9 @@ Let's start all services and databases with the command:
 make up_build
 ```
 
-// TODO Swagger
 # gateway service API
 
-Implemented a creation method. Accepts a user name, a user last name, a user phone number, a user email, and a user password.
+1. Implemented a creation method. Accepts a user name, a user last name, a user phone number, a user email, and a user password.
 
 | Key              | Data type | Description         | Example
 |------------------|-----------|---------------------|--------------------- |
@@ -60,9 +59,20 @@ POST method.
 }
 ```
 
+*Responce from the create request (JSON format):*
+```
+{
+	"user_id": "da4fe86c-e4d3-41c0-a856-40080c4031f5",
+	"first_name": "Jonn",
+	"last_name": "Smith",
+	"email": "john@gmail.com",
+	"phone": 4912345678901,
+	"user_type": "user"
+}
+```
 
 
-Implemented a login method. Accepts a user email, and a user password.
+2. Implemented a login method. Accepts a user email, and a user password.
 
 | Key              | Data type | Description         | Example
 |------------------|-----------|---------------------|--------------------- |
@@ -71,7 +81,7 @@ Implemented a login method. Accepts a user email, and a user password.
 
 POST method.
 
-    https://localhost:9999/v1/api/user/create
+    https://localhost:9999/v1/api/user/login
 
 *Add to the request body (JSON format):*
 ```
@@ -81,7 +91,7 @@ POST method.
 }
 ```
 
-*Responce from the login request  (JSON format):*
+*Responce from the login request (JSON format):*
 ```
 {
 	"session_id": "01095789-72f9-46c4-b3fb-e74c0b47d85b",

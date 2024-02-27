@@ -1,4 +1,4 @@
-package middleware
+package validate_jwt_token
 
 import (
 	"context"
