@@ -12,10 +12,10 @@ services:
       replicas: 1
     restart: always
 
-  auth-service:
+  authentication-service:
     build:
-      context: ./../auth-service
-      dockerfile: ./../auth-service/auth-service.dockerfile
+      context: ./../authentication-service
+      dockerfile: ./../authentication-service/authentication-service.dockerfile
     ports:
       - "8999:80"
     deploy:
@@ -38,18 +38,18 @@ services:
     volumes:
       - ./db-data/postgres-gateway/:/var/lib/postgresql/data/
 
-  postgres-auth:
+  postgres-authentication:
     image: 'postgres:14.2'
     ports:
-      - "6432:5432"
+      - "6432:6432"
     deploy:
       mode: replicated
       replicas: 1
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: secret
-      POSTGRES_DB: auth-service
+      POSTGRES_DB: authentication-service
     restart: always
     volumes:
-      - ./db-data/postgres-auth/:/var/lib/postgresql/data/
+      - ./db-data/postgres-authentication/:/var/lib/postgresql/data/
   

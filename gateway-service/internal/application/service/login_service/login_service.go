@@ -1,145 +1,143 @@
 package login_service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
 
 	"gateway-service/internal/application/dto"
+	"gateway-service/internal/application/helper/jsonwrapper"
 	"gateway-service/internal/application/helper/logging"
 
-	"os"
-	"time"
-
-	"github.com/golang-jwt/jwt"
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
-type (
-	UserRepository interface {
-		FetchUserById(ctx context.Context, userId uuid.UUID) (dto.User, error)
-	}
-
-	CreateSessionService interface {
-		CreateSession(ctx context.Context, session *dto.Session) error
-	}
-)
+type UserRepository interface {
+	FetchUserByEmail(ctx context.Context, email string) (user dto.User, err error)
+}
 
 func (s *service) Login(
 	ctx context.Context,
-	loginingUser *dto.User,
-) (user dto.User, session dto.Session, err error) {
+	w http.ResponseWriter,
+	loginRequest *dto.LoginRequest,
+) (session dto.Session, err error) {
 	logger := logging.LoggerFromContext(ctx)
 
-	user, err = s.userRepository.FetchUserById(ctx, loginingUser.ID)
+	user, err := s.userRepository.FetchUserByEmail(ctx, loginRequest.Email)
 	if err != nil {
 		logger.Error("fetching user by user id in database is failed", zap.Error(err))
-		return user, session, errors.New("cannot login the user")
+		return session, errors.New("cannot login the user")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginingUser.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
 	if err != nil {
 		logger.Error("received password is incorect", zap.Error(err))
-		return user, session, errors.New("login error")
+		return session, errors.New("login error")
 	}
 
-	accessTokenExpirationTime := time.Now().Add(15 * time.Minute)
-	accessToken, err := s.generateAccessToken(ctx, &user, accessTokenExpirationTime)
+	loginRequest.UserID = user.ID
+	session, err = s.authenticate(ctx, w, *loginRequest)
 	if err != nil {
-		logger.Error("access jwt token generation is failed", zap.Error(err))
-		return user, session, errors.New("login error")
+		logger.Error("sending a request to authentication-service is failed", zap.Error(err))
+		return session, errors.New("login error")
 	}
 
-	refreshTokenExpirationTime := time.Now().Add(24 * time.Hour)
-	refreshToken, err := s.generateRefreshToken(ctx, &user, refreshTokenExpirationTime)
+	cookieWithAccessToken := http.Cookie{
+		Name:     "Access_token",
+		Value:    session.AccessToken,
+		MaxAge:   3600 * 24 * 30,
+		Path:     "",
+		Domain:   "",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookieWithAccessToken)
+
+	cookieWithRefreshToken := http.Cookie{
+		Name:     "Refresh_token",
+		Value:    session.AccessToken,
+		MaxAge:   3600 * 24 * 30,
+		Path:     "",
+		Domain:   "",
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteLaxMode,
+	}
+	http.SetCookie(w, &cookieWithRefreshToken)
+
+	return session, nil
+}
+
+func (s *service) authenticate(
+	ctx context.Context,
+	w http.ResponseWriter,
+	loginRequest dto.LoginRequest,
+) (session dto.Session, err error) {
+	logger := logging.LoggerFromContext(ctx)
+
+	jsonData, err := json.MarshalIndent(loginRequest, "", "\t")
 	if err != nil {
-		logger.Error("refresh jwt token generation is failed", zap.Error(err))
-		return user, session, errors.New("login error")
+		logger.Error("login request marshalling is failed", zap.Error(err))
+		return session, err
+	}
+
+	authenticationServiceURL := "http://authentication-service/user/login"
+	request, err := http.NewRequest(http.MethodPost, authenticationServiceURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		logger.Error("cannot reach out the authentication-service", zap.Error(err))
+		return session, err
+	}
+	request.Close = true
+
+	client := &http.Client{}
+	response, err := client.Do(request)
+	if err != nil {
+		logger.Error("sending an HTTP request is failed", zap.Error(err))
+		return session, err
+	}
+	defer response.Body.Close()
+
+	// make sure we get back the correct status code
+	if response.StatusCode == http.StatusUnauthorized {
+		err := errors.New("invalid credentials")
+		logger.Error("invalid credentials", zap.Error(err))
+		return session, err
+	} else if response.StatusCode != http.StatusAccepted {
+		err := errors.New("error calling the authentication service")
+		logger.Error("error calling the authentication service", zap.Error(err))
+		return session, err
+	}
+
+	var loginResponse dto.LoginResponse
+	if err = json.NewDecoder(response.Body).Decode(&loginResponse); err != nil {
+		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
+		logger.Error("decoding of login request is failed", zap.Error(err))
+		return
 	}
 
 	session = dto.Session{
-		ID:                    uuid.New(),
-		UserID:                user.ID,
-		IsBlocked:             false,
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshTokenExpirationTime,
+		ID:                    loginResponse.SessionID,
+		IsBlocked:             loginResponse.IsBlocked,
+		AccessToken:           loginResponse.AccessToken,
+		AccessTokenExpiresAt:  loginResponse.AccessTokenExpiresAt,
+		RefreshToken:          loginResponse.RefreshToken,
+		RefreshTokenExpiresAt: loginResponse.RefreshTokenExpiresAt,
+		UserID:                loginResponse.UserID,
 	}
 
-	err = s.createSessionService.CreateSession(ctx, &session)
-	if err != nil {
-		logger.Error("fetching user by email in database is failed", zap.Error(err))
-		return user, session, errors.New("cannot login the user")
-	}
-
-	user.AccessToken = accessToken
-	user.AccessTokenExpiresAt = accessTokenExpirationTime
-	user.RefreshToken = refreshToken
-	user.RefreshTokenExpiresAt = refreshTokenExpirationTime
-	return user, session, nil
+	return session, nil
 }
 
-func (s *service) generateAccessToken(
-	ctx context.Context,
-	user *dto.User,
-	accessTokenExpirationTime time.Time,
-) (jwtToken string, err error) {
-	logger := logging.LoggerFromContext(ctx)
-
-	// generate access JWT token
-	jwtClaims := jwt.MapClaims{
-		"user_id":    user.ID.String(),
-		"first_name": user.FirstName,
-		"email":      user.Email,
-		"exp":        accessTokenExpirationTime.Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
-	jwtToken, err = token.SignedString([]byte(os.Getenv("SECRET")))
-	if err != nil {
-		logger.Error("access jwt token generation is failed", zap.Error(err))
-		return "", errors.New("login error")
-	}
-
-	return jwtToken, nil
-}
-
-func (s *service) generateRefreshToken(
-	ctx context.Context,
-	user *dto.User,
-	refreshTokenExpirationTime time.Time,
-) (jwtToken string, err error) {
-	logger := logging.LoggerFromContext(ctx)
-
-	// generate refresh JWT token
-	jwtClaims := jwt.MapClaims{
-		"user_id":    user.ID.String(),
-		"first_name": user.FirstName,
-		"email":      user.Email,
-		"exp":        refreshTokenExpirationTime.Unix(),
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
-	jwtToken, err = token.SignedString([]byte(os.Getenv("SECRET")))
-	if err != nil {
-		logger.Error("refresh jwt token generation is failed", zap.Error(err))
-		return "", errors.New("login error")
-	}
-
-	return jwtToken, nil
-}
-
-func New(
-	userRepository UserRepository,
-	createSessionService CreateSessionService,
-) *service {
+func New(userRepository UserRepository) *service {
 	return &service{
-		userRepository:       userRepository,
-		createSessionService: createSessionService,
+		userRepository: userRepository,
 	}
 }
 
 type service struct {
-	userRepository       UserRepository
-	createSessionService CreateSessionService
+	userRepository UserRepository
 }

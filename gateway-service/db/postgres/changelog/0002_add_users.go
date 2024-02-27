@@ -13,11 +13,11 @@ func init() {
 func upAddUsers(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		create table service.users (
-			id uuid not null primary key, 
+			id uuid not null unique,
 			first_name varchar(100) not null,
 			last_name varchar(100) not null,
 			password varchar(100) not null,
-			email varchar(100) not null unique,
+			email varchar(100) not null primary key,
 			phone bigint not null,
 			user_type varchar(100) not null
 		);
