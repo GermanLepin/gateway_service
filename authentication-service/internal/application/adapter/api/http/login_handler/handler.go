@@ -1,12 +1,12 @@
 package login_handler
 
 import (
+	"authentication-service/internal/application/dto"
+	"authentication-service/internal/application/helper/jsonwrapper"
+	"authentication-service/internal/application/helper/logging"
+
 	"context"
 	"encoding/json"
-
-	"gateway-service/internal/application/dto"
-	"gateway-service/internal/application/helper/jsonwrapper"
-	"gateway-service/internal/application/helper/logging"
 
 	"net/http"
 	"time"
@@ -15,7 +15,7 @@ import (
 )
 
 type LoginService interface {
-	Login(ctx context.Context, w http.ResponseWriter, loginRequest *dto.LoginRequest) (dto.Session, error)
+	Login(ctx context.Context, loginRequest *dto.LoginRequest) (dto.Session, error)
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -32,40 +32,21 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger = logger.With(zap.String("email", loginRequest.Email))
-	session, err := h.loginService.Login(ctx, w, &loginRequest)
+	logger = logger.With(
+		zap.String("uuid", loginRequest.UserID.String()),
+		zap.String("email", loginRequest.Email),
+	)
+
+	session, err := h.loginService.Login(ctx, &loginRequest)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))
 		return
 	}
 
-	cookieWithAccessToken := http.Cookie{
-		Name:     "Access_token",
-		Value:    session.AccessToken,
-		MaxAge:   3600 * 24 * 30,
-		Path:     "",
-		Domain:   "",
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-	http.SetCookie(w, &cookieWithAccessToken)
-
-	cookieWithRefreshToken := http.Cookie{
-		Name:     "Refresh_token",
-		Value:    session.AccessToken,
-		MaxAge:   3600 * 24 * 30,
-		Path:     "",
-		Domain:   "",
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-	http.SetCookie(w, &cookieWithRefreshToken)
-
 	loginResponse := dto.LoginResponse{
 		SessionID:             session.ID,
+		IsBlocked:             session.IsBlocked,
 		AccessToken:           session.AccessToken,
 		AccessTokenExpiresAt:  session.AccessTokenExpiresAt,
 		RefreshToken:          session.RefreshToken,
@@ -73,9 +54,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		UserID:                session.UserID,
 	}
 
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&loginResponse)
-	if err != nil {
+	if err = jsonwrapper.WriteJSON(w, http.StatusAccepted, loginResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("encoding of create user responce is failed", zap.Error(err))
 		return

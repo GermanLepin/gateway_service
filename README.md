@@ -1,15 +1,15 @@
-# Information about the gateway service
+# Information about the project X
 
-I have designed the microservices interaction, and there are three services:
-- gateway-service is an entry point into applications;
-- payment-service is the main service where I wrote the main handlers and logic;
-- bank-api is an imitation of an external banking service with which we communicate using the REST API. You can check this out on the scheme at the very bottom.
+I have designed the microservices interaction, and there are two services:
+- gateway service is an entry point into applications;
+- authentication-service is the service checking authorization and authentication;
+
 
 What I already did:
-1. user creation handler `v1/user/create`
-2. user logging handler `v1/user/login`
-3. user deletion handler `v1/user/delete/{uuid}`
-4. user fetching handler `v1/user/fetch/{uuid}`
+1. user creation handler `v1/api/user/create`
+2. user logging handler `v1/api/user/login`
+3. user deletion handler `v1/api/user/delete/{uuid}`
+4. user fetching handler `v1/api/user/fetch/{uuid}`
 5. start the database and the servers using only one command
 6. migrations
 
@@ -33,19 +33,6 @@ make up_build
 // TODO Swagger
 # gateway service API
 
-type User struct {
-	ID           uuid.UUID
-	FirstName    string
-	LastName     string
-	Password     string
-	Email        string
-	Phone        int
-	UserType     string
-	JWTToken     string
-	RefreshToken string
-}
-
-
 Implemented a creation method. Accepts a user name, a user last name, a user phone number, a user email, and a user password.
 
 | Key              | Data type | Description         | Example
@@ -57,11 +44,9 @@ Implemented a creation method. Accepts a user name, a user last name, a user pho
 | phone            | int       | a user phone number | 4912345678901        |
 | user_type        | string    | a user type         | admin/user           |
 
-
 POST method.
 
-    http://localhost:9000/v1/user/create
-
+    https://localhost:9999/v1/api/user/create
 
 *Add to the request body (JSON format):*
 ```
@@ -75,4 +60,37 @@ POST method.
 }
 ```
 
+
+
+Implemented a login method. Accepts a user email, and a user password.
+
+| Key              | Data type | Description         | Example
+|------------------|-----------|---------------------|--------------------- |
+| email            | string    | a user email        | john@gmail.com       |
+| password         | string    | a user password     | 1234qwer             |
+
+POST method.
+
+    https://localhost:9999/v1/api/user/create
+
+*Add to the request body (JSON format):*
+```
+{
+	"email": "john@gmail.com",
+	"password":"1234qwer"
+}
+```
+
+*Responce from the login request  (JSON format):*
+```
+{
+	"session_id": "01095789-72f9-46c4-b3fb-e74c0b47d85b",
+	"is_bloked": false,
+	"access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvaG5AZ21haWwuY29tIiwiZXhwIjoxNzA5MDY5NDUyLCJ1c2VyX2lkIjoiNmQ5YmUyOWUtYWI4Yi00NmVjLTg4ZDctNzgwYzE4MDM3MGE2In0.zsUzuGor3x1EtYAZ9rFN919VGtNLdBlyxl_Agti0Xqk",
+	"access_token_expires_at": "2024-02-27T21:30:52.136613036Z",
+	"refresh_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImpvaG5AZ21haWwuY29tIiwiZXhwIjoxNzA5MzI3NzUyLCJ1c2VyX2lkIjoiNmQ5YmUyOWUtYWI4Yi00NmVjLTg4ZDctNzgwYzE4MDM3MGE2In0.Cp6V9wM1CTER33Itac0bNgfPKrlVdgXhZ765TQmoK9Y",
+	"refresh_token_expires_at": "2024-03-01T21:15:52.136651535Z",
+	"user_id": "6d9be29e-ab8b-46ec-88d7-780c180370a6"
+}
+```
 

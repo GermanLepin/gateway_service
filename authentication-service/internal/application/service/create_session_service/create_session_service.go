@@ -1,10 +1,11 @@
 package create_session_service
 
 import (
+	"authentication-service/internal/application/dto"
+	"authentication-service/internal/application/helper/logging"
+
 	"context"
 	"errors"
-	"gateway-service/internal/application/dto"
-	"gateway-service/internal/application/helper/logging"
 
 	"go.uber.org/zap"
 )

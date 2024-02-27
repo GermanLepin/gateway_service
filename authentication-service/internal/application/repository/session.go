@@ -1,14 +1,15 @@
 package repository
 
 import (
+	"authentication-service/internal/application/dto"
+
 	"context"
 	"database/sql"
-	"gateway-service/internal/application/dto"
 )
 
 func (s *sessionRepository) SaveSession(ctx context.Context, session *dto.Session) error {
 	queryString := `
-		insert into service.sessions(id, user_id, is_blocked, refresh_token, expires_at) 
+		insert into service.sessions(id, user_id, is_blocked, refresh_token, expires_at)
 		values ($1,$2,$3,$4,$5)
 	;`
 

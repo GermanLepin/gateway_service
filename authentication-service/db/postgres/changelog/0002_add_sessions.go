@@ -13,15 +13,13 @@ func init() {
 func upSessions(tx *sql.Tx) error {
 	_, err := tx.Exec(`
 		create table service.sessions (
-			id uuid primary key, 
+			id uuid primary key,
 			user_id uuid not null,
 			is_blocked boolean not null default false,
 			refresh_token varchar not null,
 			expires_at timestamptz not null,
 			created_at timestamptz not null default (now())
 		);
-
-		alter table service.sessions add foreign key ("user_id") references service.users ("id");		
 	`)
 	if err != nil {
 		return err

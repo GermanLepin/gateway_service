@@ -2,7 +2,6 @@ package routes
 
 import (
 	"database/sql"
-	middleware "gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
 
 	"net/http"
 
@@ -45,17 +44,9 @@ func (s *service) NewRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	router.Route("/v1/api/user", func(r chi.Router) {
-		r.Post("/create", s.createUserHandler.CreateUser)
+	router.Route("/user", func(r chi.Router) {
 		r.Post("/login", s.loginHandler.Login)
-		//r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
-	})
-
-	router.Route("/v1/api/user/protected", func(r chi.Router) {
-		r.Use(middleware.RequireAuth)
-		r.Get("/fetch/{uuid}", s.fetchUserHandler.FetchUser)
-		r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
-		// to do /logout
+		// r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
 	})
 
 	return router
@@ -64,29 +55,29 @@ func (s *service) NewRoutes() http.Handler {
 func New(
 	connection *sql.DB,
 
-	createUserHandler CreateUserHandler,
+	// createUserHandler CreateUserHandler,
 	loginHandler LoginHandler,
-	//refreshTokenHandler RefreshTokenHandler,
-	fetchUserHandler FetchUserHandler,
-	deleteUserHandler DeleteUserHandler,
+	// refreshTokenHandler RefreshTokenHandler,
+	// fetchUserHandler FetchUserHandler,
+	// deleteUserHandler DeleteUserHandler,
 ) *service {
 	return &service{
-		connection: connection,
+		// connection: connection,
 
-		createUserHandler: createUserHandler,
-		loginHandler:      loginHandler,
-		//refreshTokenHandler: refreshTokenHandler,
-		fetchUserHandler:  fetchUserHandler,
-		deleteUserHandler: deleteUserHandler,
+		// createUserHandler:   createUserHandler,
+		loginHandler: loginHandler,
+		// refreshTokenHandler: refreshTokenHandler,
+		// fetchUserHandler:    fetchUserHandler,
+		// deleteUserHandler:   deleteUserHandler,
 	}
 }
 
 type service struct {
-	connection *sql.DB
+	// 	connection *sql.DB
 
-	createUserHandler CreateUserHandler
-	loginHandler      LoginHandler
-	//refreshTokenHandler RefreshTokenHandler
-	fetchUserHandler  FetchUserHandler
-	deleteUserHandler DeleteUserHandler
+	// createUserHandler   CreateUserHandler
+	loginHandler LoginHandler
+	// refreshTokenHandler RefreshTokenHandler
+	// fetchUserHandler    FetchUserHandler
+	// deleteUserHandler   DeleteUserHandler
 }

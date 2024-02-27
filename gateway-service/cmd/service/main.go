@@ -12,7 +12,6 @@ import (
 	"gateway-service/internal/application/adapter/api/routes"
 	"gateway-service/internal/application/helper/logging"
 	"gateway-service/internal/application/repository"
-	"gateway-service/internal/application/service/create_session_service"
 	"gateway-service/internal/application/service/create_user_service"
 	"gateway-service/internal/application/service/delete_user_service"
 	"gateway-service/internal/application/service/fetch_user_service"
@@ -50,13 +49,10 @@ func main() {
 	defer loggerSyncFunc()
 
 	connection := connection.StartDB()
-
 	user_repository := repository.NewUserRepository(connection)
-	session_repository := repository.NewSessionRepository(connection)
 
 	create_user_service := create_user_service.New(user_repository)
-	create_session_service := create_session_service.New(session_repository)
-	login_service := login_service.New(user_repository, create_session_service)
+	login_service := login_service.New(user_repository)
 	fetch_user_service := fetch_user_service.New(user_repository)
 	delete_user_service := delete_user_service.New(user_repository)
 
