@@ -2,7 +2,6 @@ package routes
 
 import (
 	"database/sql"
-	"gateway-service/internal/application/adapter/api/middleware/validate_jwt_token"
 
 	"net/http"
 
@@ -48,15 +47,9 @@ func (s *service) NewRoutes() http.Handler {
 	router.Route("/v1/api/user", func(r chi.Router) {
 		r.Post("/create", s.createUserHandler.CreateUser)
 		r.Post("/login", s.loginHandler.Login)
-		//r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
-	})
-
-	// TODO start using authentication service
-	router.Route("/v1/api/user/protected", func(r chi.Router) {
-		r.Use(validate_jwt_token.RequireAuth)
 		r.Get("/fetch/{uuid}", s.fetchUserHandler.FetchUser)
 		r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
-		// TODO /logout
+		//r.Post("/logout", s.logoutHandler.Logout)
 	})
 
 	return router

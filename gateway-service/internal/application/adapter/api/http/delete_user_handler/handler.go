@@ -2,7 +2,6 @@ package delete_user_handler
 
 import (
 	"context"
-	"encoding/json"
 
 	"gateway-service/internal/application/dto"
 	"gateway-service/internal/application/helper/jsonwrapper"
@@ -31,7 +30,7 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	userUUID, err := uuid.Parse(userId)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("user id parsing is failed", zap.Error(err))
+		logger.Error("user id parsing is failing", zap.Error(err))
 		return
 	}
 
@@ -49,11 +48,9 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		Message: descriptionMessage,
 	}
 
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&deleteUserResponse)
-	if err != nil {
+	if err = jsonwrapper.WriteJSON(w, http.StatusOK, deleteUserResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("encoding of create user responce is failed", zap.Error(err))
+		logger.Error("could not send a delete user response.", zap.Error(err))
 		return
 	}
 }

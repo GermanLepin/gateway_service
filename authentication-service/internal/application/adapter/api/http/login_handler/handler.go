@@ -28,7 +28,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginRequest dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("decoding of login request is failed", zap.Error(err))
+		logger.Error("the decoding of the logging request failed", zap.Error(err))
 		return
 	}
 
@@ -56,7 +56,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err = jsonwrapper.WriteJSON(w, http.StatusAccepted, loginResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("encoding of create user responce is failed", zap.Error(err))
+		logger.Error("cannot send a login response", zap.Error(err))
 		return
 	}
 }

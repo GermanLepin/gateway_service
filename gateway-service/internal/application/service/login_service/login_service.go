@@ -28,20 +28,20 @@ func (s *service) Login(
 
 	user, err := s.userRepository.FetchUserByEmail(ctx, loginRequest.Email)
 	if err != nil {
-		logger.Error("fetching user by user id in database is failed", zap.Error(err))
-		return session, errors.New("cannot login the user")
+		logger.Error("fetching the user by user ID in the database is a failed", zap.Error(err))
+		return session, errors.New("cannot login to the user")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
 	if err != nil {
-		logger.Error("received password is incorect", zap.Error(err))
+		logger.Error("the received password is incorrect", zap.Error(err))
 		return session, errors.New("login error")
 	}
 
 	loginRequest.UserID = user.ID
 	session, err = s.authenticate(ctx, w, *loginRequest)
 	if err != nil {
-		logger.Error("sending a request to authentication-service is failed", zap.Error(err))
+		logger.Error("sending a request to the authentication-service failed", zap.Error(err))
 		return session, errors.New("login error")
 	}
 
@@ -85,10 +85,10 @@ func (s *service) authenticate(
 		return session, err
 	}
 
-	authenticationServiceURL := "http://authentication-service/user/login"
+	authenticationServiceURL := "http://authentication-service/login"
 	request, err := http.NewRequest(http.MethodPost, authenticationServiceURL, bytes.NewBuffer(jsonData))
 	if err != nil {
-		logger.Error("cannot reach out the authentication-service", zap.Error(err))
+		logger.Error("cannot reach out to the authentication-service", zap.Error(err))
 		return session, err
 	}
 	request.Close = true
@@ -96,7 +96,7 @@ func (s *service) authenticate(
 	client := &http.Client{}
 	response, err := client.Do(request)
 	if err != nil {
-		logger.Error("sending an HTTP request is failed", zap.Error(err))
+		logger.Error("sending an HTTP request is a failure", zap.Error(err))
 		return session, err
 	}
 	defer response.Body.Close()
@@ -107,15 +107,15 @@ func (s *service) authenticate(
 		logger.Error("invalid credentials", zap.Error(err))
 		return session, err
 	} else if response.StatusCode != http.StatusAccepted {
-		err := errors.New("error calling the authentication service")
-		logger.Error("error calling the authentication service", zap.Error(err))
+		err := errors.New("error calling the authentication-service")
+		logger.Error("error calling the authentication-service", zap.Error(err))
 		return session, err
 	}
 
 	var loginResponse dto.LoginResponse
 	if err = json.NewDecoder(response.Body).Decode(&loginResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("decoding of login request is failed", zap.Error(err))
+		logger.Error("the decoding of the login request is failed", zap.Error(err))
 		return
 	}
 

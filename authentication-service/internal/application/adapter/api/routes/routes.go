@@ -10,24 +10,16 @@ import (
 )
 
 type (
-	CreateUserHandler interface {
-		CreateUser(w http.ResponseWriter, r *http.Request)
-	}
-
 	LoginHandler interface {
 		Login(w http.ResponseWriter, r *http.Request)
 	}
 
+	ValidateTokenHandler interface {
+		ValidateToken(w http.ResponseWriter, r *http.Request)
+	}
+
 	RefreshTokenHandler interface {
 		RefreshToken(w http.ResponseWriter, r *http.Request)
-	}
-
-	FetchUserHandler interface {
-		FetchUser(w http.ResponseWriter, r *http.Request)
-	}
-
-	DeleteUserHandler interface {
-		DeleteUser(w http.ResponseWriter, r *http.Request)
 	}
 )
 
@@ -44,9 +36,10 @@ func (s *service) NewRoutes() http.Handler {
 		MaxAge:           300,
 	}))
 
-	router.Route("/user", func(r chi.Router) {
+	router.Route("/", func(r chi.Router) {
 		r.Post("/login", s.loginHandler.Login)
-		// r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
+		r.Post("/validate-token", s.validateTokenHandler.ValidateToken)
+		r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
 	})
 
 	return router
@@ -55,29 +48,23 @@ func (s *service) NewRoutes() http.Handler {
 func New(
 	connection *sql.DB,
 
-	// createUserHandler CreateUserHandler,
 	loginHandler LoginHandler,
-	// refreshTokenHandler RefreshTokenHandler,
-	// fetchUserHandler FetchUserHandler,
-	// deleteUserHandler DeleteUserHandler,
+	validateTokenHandler ValidateTokenHandler,
+	refreshTokenHandler RefreshTokenHandler,
 ) *service {
 	return &service{
-		// connection: connection,
+		connection: connection,
 
-		// createUserHandler:   createUserHandler,
-		loginHandler: loginHandler,
-		// refreshTokenHandler: refreshTokenHandler,
-		// fetchUserHandler:    fetchUserHandler,
-		// deleteUserHandler:   deleteUserHandler,
+		loginHandler:         loginHandler,
+		validateTokenHandler: validateTokenHandler,
+		refreshTokenHandler:  refreshTokenHandler,
 	}
 }
 
 type service struct {
-	// 	connection *sql.DB
+	connection *sql.DB
 
-	// createUserHandler   CreateUserHandler
-	loginHandler LoginHandler
-	// refreshTokenHandler RefreshTokenHandler
-	// fetchUserHandler    FetchUserHandler
-	// deleteUserHandler   DeleteUserHandler
+	loginHandler         LoginHandler
+	validateTokenHandler ValidateTokenHandler
+	refreshTokenHandler  RefreshTokenHandler
 }

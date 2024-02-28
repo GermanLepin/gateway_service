@@ -2,7 +2,6 @@ package fetch_user_handler
 
 import (
 	"context"
-	"encoding/json"
 
 	"gateway-service/internal/application/dto"
 	"gateway-service/internal/application/helper/jsonwrapper"
@@ -31,7 +30,7 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 	userUUID, err := uuid.Parse(userId)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("user id parsing is failed", zap.Error(err))
+		logger.Error("user id parsing is failing", zap.Error(err))
 		return
 	}
 
@@ -53,7 +52,7 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 		zap.String("user_type", user.UserType),
 	)
 
-	deleteUserResponse := dto.UserResponse{
+	fetchUserResponse := dto.UserResponse{
 		UserID:    user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
@@ -62,11 +61,9 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 		UserType:  user.UserType,
 	}
 
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&deleteUserResponse)
-	if err != nil {
+	if err = jsonwrapper.WriteJSON(w, http.StatusOK, fetchUserResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("encoding of create user responce is failed", zap.Error(err))
+		logger.Error("could not send a fetch user response", zap.Error(err))
 		return
 	}
 }

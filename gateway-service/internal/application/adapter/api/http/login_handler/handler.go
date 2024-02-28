@@ -28,7 +28,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginRequest dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("decoding of login request is failed", zap.Error(err))
+		logger.Error("the decoding of the login request is failed", zap.Error(err))
 		return
 	}
 
@@ -41,7 +41,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookieWithAccessToken := http.Cookie{
-		Name:     "Access_token",
+		Name:     "access_token",
 		Value:    session.AccessToken,
 		MaxAge:   3600 * 24 * 30,
 		Path:     "",
@@ -53,8 +53,8 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookieWithAccessToken)
 
 	cookieWithRefreshToken := http.Cookie{
-		Name:     "Refresh_token",
-		Value:    session.AccessToken,
+		Name:     "refresh_token",
+		Value:    session.RefreshToken,
 		MaxAge:   3600 * 24 * 30,
 		Path:     "",
 		Domain:   "",
@@ -73,11 +73,9 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		UserID:                session.UserID,
 	}
 
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&loginResponse)
-	if err != nil {
+	if err = jsonwrapper.WriteJSON(w, http.StatusOK, loginResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("encoding of create user responce is failed", zap.Error(err))
+		logger.Error("could not send a login user response", zap.Error(err))
 		return
 	}
 }
