@@ -7,11 +7,12 @@ import (
 )
 
 type Session struct {
-	UserID                uuid.UUID
 	ID                    uuid.UUID
+	UserID                uuid.UUID
 	IsBlocked             bool
 	AccessToken           string
 	AccessTokenExpiresAt  time.Time
 	RefreshToken          string
 	RefreshTokenExpiresAt time.Time
+	CreatedAt             time.Time
 }

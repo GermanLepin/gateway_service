@@ -47,8 +47,9 @@ func (s *service) NewRoutes() http.Handler {
 	router.Route("/v1/api/user", func(r chi.Router) {
 		r.Post("/create", s.createUserHandler.CreateUser)
 		r.Post("/login", s.loginHandler.Login)
-		r.Get("/fetch/{uuid}", s.fetchUserHandler.FetchUser)
-		r.Delete("/delete/{uuid}", s.deleteUserHandler.DeleteUser)
+		r.Post("/refresh-token", s.refreshTokenHandler.RefreshToken)
+		r.Get("/fetch/{user_id}", s.fetchUserHandler.FetchUser)
+		r.Delete("/delete/{user_id}", s.deleteUserHandler.DeleteUser)
 		//r.Post("/logout", s.logoutHandler.Logout)
 	})
 
@@ -60,27 +61,27 @@ func New(
 
 	createUserHandler CreateUserHandler,
 	loginHandler LoginHandler,
-	//refreshTokenHandler RefreshTokenHandler,
+	refreshTokenHandler RefreshTokenHandler,
 	fetchUserHandler FetchUserHandler,
 	deleteUserHandler DeleteUserHandler,
 ) *service {
 	return &service{
 		connection: connection,
 
-		createUserHandler: createUserHandler,
-		loginHandler:      loginHandler,
-		//refreshTokenHandler: refreshTokenHandler,
-		fetchUserHandler:  fetchUserHandler,
-		deleteUserHandler: deleteUserHandler,
+		createUserHandler:   createUserHandler,
+		loginHandler:        loginHandler,
+		refreshTokenHandler: refreshTokenHandler,
+		fetchUserHandler:    fetchUserHandler,
+		deleteUserHandler:   deleteUserHandler,
 	}
 }
 
 type service struct {
 	connection *sql.DB
 
-	createUserHandler CreateUserHandler
-	loginHandler      LoginHandler
-	//refreshTokenHandler RefreshTokenHandler
-	fetchUserHandler  FetchUserHandler
-	deleteUserHandler DeleteUserHandler
+	createUserHandler   CreateUserHandler
+	loginHandler        LoginHandler
+	refreshTokenHandler RefreshTokenHandler
+	fetchUserHandler    FetchUserHandler
+	deleteUserHandler   DeleteUserHandler
 }

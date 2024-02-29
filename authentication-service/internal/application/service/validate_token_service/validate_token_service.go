@@ -15,10 +15,12 @@ import (
 	"go.uber.org/zap"
 )
 
-func (s *service) ValidateToken(ctx context.Context, validateTokenRequest *dto.ValidateTokenRequest) error {
+func (s *service) ValidateToken(ctx context.Context, validateToken *dto.ValidateToken) error {
 	logger := logging.LoggerFromContext(ctx)
 
-	token, err := jwt.Parse(validateTokenRequest.AccessToken, func(token *jwt.Token) (interface{}, error) {
+	// TODO check: do we have a user in db?
+
+	token, err := jwt.Parse(validateToken.AccessToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			err := fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			logger.Error("token method is incorrect", zap.Error(err))
@@ -34,8 +36,6 @@ func (s *service) ValidateToken(ctx context.Context, validateTokenRequest *dto.V
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		if float64(time.Now().Unix()) > claims["exp"].(float64) {
-
-			// TODO refresh token
 			logger.Error("token is expired", zap.Error(err))
 			return err
 		}

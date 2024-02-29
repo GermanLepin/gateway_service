@@ -26,7 +26,7 @@ func (h *handler) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	userId := chi.URLParam(r, "uuid")
+	userId := chi.URLParam(r, "user_id")
 	userUUID, err := uuid.Parse(userId)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)

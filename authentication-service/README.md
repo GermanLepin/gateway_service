@@ -5,4 +5,5 @@ The authentication service is a service that accepts all requests from the gatew
 What I already did:
 1. user logging handler `user/login`
 2. user validation token handler `user/validate-token`
+3. user refresh token handler `user/refresh-token`
 3. migrations

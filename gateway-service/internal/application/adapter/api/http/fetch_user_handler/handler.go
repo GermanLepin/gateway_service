@@ -16,7 +16,7 @@ import (
 )
 
 type FetchUserService interface {
-	FetchUser(ctx context.Context, userId uuid.UUID) (dto.User, error)
+	FetchUser(ctx context.Context, r *http.Request, userId uuid.UUID) (dto.User, error)
 }
 
 func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
@@ -26,7 +26,7 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	userId := chi.URLParam(r, "uuid")
+	userId := chi.URLParam(r, "user_id")
 	userUUID, err := uuid.Parse(userId)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
@@ -35,7 +35,7 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	logger = logger.With(zap.String("uuid", userId))
-	user, err := h.fetchUserService.FetchUser(ctx, userUUID)
+	user, err := h.fetchUserService.FetchUser(ctx, r, userUUID)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("user fetching is failed", zap.Error(err))
@@ -52,7 +52,7 @@ func (h *handler) FetchUser(w http.ResponseWriter, r *http.Request) {
 		zap.String("user_type", user.UserType),
 	)
 
-	fetchUserResponse := dto.UserResponse{
+	fetchUserResponse := dto.FetchUserResponse{
 		UserID:    user.ID,
 		FirstName: user.FirstName,
 		LastName:  user.LastName,

@@ -9,6 +9,7 @@ import (
 	"gateway-service/internal/application/adapter/api/http/delete_user_handler"
 	"gateway-service/internal/application/adapter/api/http/fetch_user_handler"
 	"gateway-service/internal/application/adapter/api/http/login_handler"
+	"gateway-service/internal/application/adapter/api/http/refresh_token_handler"
 	"gateway-service/internal/application/adapter/api/routes"
 	"gateway-service/internal/application/helper/logging"
 	"gateway-service/internal/application/repository"
@@ -16,6 +17,8 @@ import (
 	"gateway-service/internal/application/service/delete_user_service"
 	"gateway-service/internal/application/service/fetch_user_service"
 	"gateway-service/internal/application/service/login_service"
+	"gateway-service/internal/application/service/refresh_token_service"
+	"gateway-service/internal/application/service/validate_token_service"
 
 	"log"
 	"net/http"
@@ -53,11 +56,14 @@ func main() {
 
 	create_user_service := create_user_service.New(user_repository)
 	login_service := login_service.New(user_repository)
-	fetch_user_service := fetch_user_service.New(user_repository)
+	validate_token_service := validate_token_service.New()
+	refresh_token_service := refresh_token_service.New()
+	fetch_user_service := fetch_user_service.New(user_repository, validate_token_service)
 	delete_user_service := delete_user_service.New(user_repository)
 
 	create_user_handler := create_user_handler.New(create_user_service)
 	login_handler := login_handler.New(login_service)
+	refreshTokenHandler := refresh_token_handler.New(refresh_token_service)
 	fetch_user_handler := fetch_user_handler.New(fetch_user_service)
 	delete_user_handler := delete_user_handler.New(delete_user_service)
 
@@ -65,6 +71,7 @@ func main() {
 		connection,
 		create_user_handler,
 		login_handler,
+		refreshTokenHandler,
 		fetch_user_handler,
 		delete_user_handler,
 	)

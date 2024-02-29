@@ -15,7 +15,7 @@ import (
 )
 
 type RefreshTokenService interface {
-	RefreshToken(ctx context.Context, refreshTokenRequest *dto.RefreshTokenRequest) (dto.Session, error)
+	RefreshToken(ctx context.Context, refreshToken *dto.RefreshToken) (dto.Session, error)
 }
 
 func (h *handler) RefreshToken(w http.ResponseWriter, r *http.Request) {
@@ -34,15 +34,17 @@ func (h *handler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 
 	logger = logger.With(
 		zap.String("user_id", refreshTokenRequest.UserID.String()),
-		zap.String("session_id", refreshTokenRequest.UserID.String()),
-		zap.Bool("is_bloked", refreshTokenRequest.IsBlocked),
-		zap.String("access_token", refreshTokenRequest.AccessToken),
-		zap.Time("access_token_expires_at", refreshTokenRequest.AccessTokenExpiresAt),
 		zap.String("refresh_token", refreshTokenRequest.RefreshToken),
-		zap.Time("refresh_token_expires_at", refreshTokenRequest.RefreshTokenExpiresAt),
+		zap.Time("refresh_token_expires_at", refreshTokenRequest.ExpiresAt),
 	)
 
-	session, err := h.refreshTokenService.RefreshToken(ctx, &refreshTokenRequest)
+	refreshToken := &dto.RefreshToken{
+		UserID:       refreshTokenRequest.UserID,
+		RefreshToken: refreshTokenRequest.RefreshToken,
+		ExpiresAt:    refreshTokenRequest.ExpiresAt,
+	}
+
+	session, err := h.refreshTokenService.RefreshToken(ctx, refreshToken)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("refresh token is failed", zap.Error(err))

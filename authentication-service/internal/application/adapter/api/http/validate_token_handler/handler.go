@@ -15,7 +15,7 @@ import (
 )
 
 type ValidateTokenService interface {
-	ValidateToken(ctx context.Context, validateTokenRequest *dto.ValidateTokenRequest) error
+	ValidateToken(ctx context.Context, validateToken *dto.ValidateToken) error
 }
 
 func (h *handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
@@ -34,15 +34,17 @@ func (h *handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 	logger = logger.With(
 		zap.String("user_id", validateTokenRequest.UserID.String()),
-		zap.String("session_id", validateTokenRequest.UserID.String()),
-		zap.Bool("is_bloked", validateTokenRequest.IsBlocked),
 		zap.String("access_token", validateTokenRequest.AccessToken),
-		zap.Time("access_token_expires_at", validateTokenRequest.AccessTokenExpiresAt),
-		zap.String("refresh_token", validateTokenRequest.RefreshToken),
-		zap.Time("refresh_token_expires_at", validateTokenRequest.RefreshTokenExpiresAt),
+		zap.Time("access_token_expires_at", validateTokenRequest.ExpiresAt),
 	)
 
-	err := h.validateTokenService.ValidateToken(ctx, &validateTokenRequest)
+	validateToken := &dto.ValidateToken{
+		UserID:      validateTokenRequest.UserID,
+		AccessToken: validateTokenRequest.AccessToken,
+		ExpiresAt:   validateTokenRequest.ExpiresAt,
+	}
+
+	err := h.validateTokenService.ValidateToken(ctx, validateToken)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("validate token is failed", zap.Error(err))

@@ -45,30 +45,6 @@ func (s *service) Login(
 		return session, errors.New("login error")
 	}
 
-	cookieWithAccessToken := http.Cookie{
-		Name:     "Access_token",
-		Value:    session.AccessToken,
-		MaxAge:   3600 * 24 * 30,
-		Path:     "",
-		Domain:   "",
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-	http.SetCookie(w, &cookieWithAccessToken)
-
-	cookieWithRefreshToken := http.Cookie{
-		Name:     "Refresh_token",
-		Value:    session.AccessToken,
-		MaxAge:   3600 * 24 * 30,
-		Path:     "",
-		Domain:   "",
-		Secure:   true,
-		HttpOnly: true,
-		SameSite: http.SameSiteLaxMode,
-	}
-	http.SetCookie(w, &cookieWithRefreshToken)
-
 	return session, nil
 }
 

@@ -11,11 +11,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
-type LoginService interface {
-	Login(ctx context.Context, loginRequest *dto.LoginRequest) (dto.Session, error)
+type CreateSessionService interface {
+	CreateSession(ctx context.Context, userID uuid.UUID) (session dto.Session, err error)
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -37,7 +38,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		zap.String("email", loginRequest.Email),
 	)
 
-	session, err := h.loginService.Login(ctx, &loginRequest)
+	session, err := h.createSessionService.CreateSession(ctx, loginRequest.UserID)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))
@@ -61,12 +62,12 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func New(loginService LoginService) *handler {
+func New(createSessionService CreateSessionService) *handler {
 	return &handler{
-		loginService: loginService,
+		createSessionService: createSessionService,
 	}
 }
 
 type handler struct {
-	loginService LoginService
+	createSessionService CreateSessionService
 }
