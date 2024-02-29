@@ -3,11 +3,14 @@ package main
 import (
 	"authentication-service/db/postgres/connection"
 	"authentication-service/internal/application/adapter/api/http/login_handler"
+	"authentication-service/internal/application/adapter/api/http/refresh_token_handler"
+	"authentication-service/internal/application/adapter/api/http/validate_token_handler"
 	"authentication-service/internal/application/adapter/api/routes"
 	"authentication-service/internal/application/helper/logging"
 	"authentication-service/internal/application/repository"
 	"authentication-service/internal/application/service/create_session_service"
-	"authentication-service/internal/application/service/login_service"
+	"authentication-service/internal/application/service/refresh_token_service"
+	"authentication-service/internal/application/service/validate_token_service"
 
 	"context"
 	"fmt"
@@ -46,13 +49,18 @@ func main() {
 	session_repository := repository.NewSessionRepository(connection)
 
 	create_session_service := create_session_service.New(session_repository)
-	login_service := login_service.New(create_session_service)
+	validate_token_service := validate_token_service.New()
+	refresh_token_service := refresh_token_service.New(session_repository, create_session_service)
 
-	login_handler := login_handler.New(login_service)
+	login_handler := login_handler.New(create_session_service)
+	validate_token_handler := validate_token_handler.New(validate_token_service)
+	refresh_token_handler := refresh_token_handler.New(refresh_token_service)
 
 	api_routes := routes.New(
 		connection,
 		login_handler,
+		validate_token_handler,
+		refresh_token_handler,
 	)
 
 	log.Printf("starting client service on port %s\n", webPort)

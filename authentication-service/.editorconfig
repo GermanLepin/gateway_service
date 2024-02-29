@@ -14,27 +14,3 @@ indent_size = 4
 [*.{go,go.tmpl}]
 indent_style = tab
 indent_size = 4
-
-[*.proto]
-indent_style = space
-indent_size = 2
-
-[*.{yaml,yml}]
-indent_style = space
-indent_size = 2
-
-[*.json]
-indent_style = space
-indent_size = 2
-
-[*.{yaml.j2,yml.j2}]
-indent_style = space
-indent_size = 2
-
-[*.cfg.j2]
-indent_style = space
-indent_size = 2
-
-[Makefile]
-indent_style = tab
-indent_size = 8

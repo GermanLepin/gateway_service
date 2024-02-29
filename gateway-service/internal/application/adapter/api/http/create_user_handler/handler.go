@@ -30,7 +30,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	var createUserRequest dto.CreateUserRequest
 	if err := json.NewDecoder(r.Body).Decode(&createUserRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("decoding of create user request is failed", zap.Error(err))
+		logger.Error("the decoding of the create user request failed", zap.Error(err))
 		return
 	}
 
@@ -62,7 +62,7 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 	user.ID = uuid.New()
 	if err := h.createUserService.CreateUser(ctx, user); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("user creation is failed", zap.Error(err))
+		logger.Error("user creation is failing", zap.Error(err))
 		return
 	}
 
@@ -75,11 +75,9 @@ func (h *handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		UserType:  user.UserType,
 	}
 
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(&createUserResponse)
-	if err != nil {
+	if err = jsonwrapper.WriteJSON(w, http.StatusOK, createUserResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("encoding of create user responce is failed", zap.Error(err))
+		logger.Error("could not send a create user response", zap.Error(err))
 		return
 	}
 }

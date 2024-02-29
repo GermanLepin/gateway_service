@@ -1,8 +1,7 @@
-package login_handler
+package refresh_token_handler
 
 import (
 	"context"
-	"encoding/json"
 
 	"gateway-service/internal/application/dto"
 	"gateway-service/internal/application/helper/jsonwrapper"
@@ -14,26 +13,18 @@ import (
 	"go.uber.org/zap"
 )
 
-type LoginService interface {
-	Login(ctx context.Context, w http.ResponseWriter, loginRequest *dto.LoginRequest) (dto.Session, error)
+type RefreshTokenService interface {
+	RefreshTokenRequest(ctx context.Context, w http.ResponseWriter, r *http.Request) (session dto.Session, err error)
 }
 
-func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *handler) RefreshToken(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	var loginRequest dto.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
-		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("the decoding of the login request is failed", zap.Error(err))
-		return
-	}
-
-	logger = logger.With(zap.String("email", loginRequest.Email))
-	session, err := h.loginService.Login(ctx, w, &loginRequest)
+	session, err := h.refreshTokenService.RefreshTokenRequest(ctx, w, r)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))
@@ -64,7 +55,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 	http.SetCookie(w, &cookieWithRefreshToken)
 
-	loginResponse := dto.LoginResponse{
+	loginResponse := dto.RefreshTokenResponse{
 		SessionID:             session.ID,
 		AccessToken:           session.AccessToken,
 		AccessTokenExpiresAt:  session.AccessTokenExpiresAt,
@@ -80,12 +71,12 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func New(loginService LoginService) *handler {
+func New(refreshTokenService RefreshTokenService) *handler {
 	return &handler{
-		loginService: loginService,
+		refreshTokenService: refreshTokenService,
 	}
 }
 
 type handler struct {
-	loginService LoginService
+	refreshTokenService RefreshTokenService
 }

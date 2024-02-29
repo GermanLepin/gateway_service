@@ -17,7 +17,7 @@ func upSessions(tx *sql.Tx) error {
 			user_id uuid not null,
 			is_blocked boolean not null default false,
 			refresh_token varchar not null,
-			expires_at timestamptz not null,
+			refresh_token_expires_at timestamptz not null,
 			created_at timestamptz not null default (now())
 		);
 	`)

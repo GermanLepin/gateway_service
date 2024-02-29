@@ -32,7 +32,11 @@ func (u *userRepository) SaveUser(ctx context.Context, user *dto.User) error {
 }
 
 func (u *userRepository) FetchUserById(ctx context.Context, userId uuid.UUID) (user dto.User, err error) {
-	queryString := `select id, first_name, last_name, password, email, phone, user_type from service.users where id = $1;`
+	queryString := `
+		select id, first_name, last_name, password, email, phone, user_type
+		from service.users
+		where id = $1
+	;`
 
 	err = u.db.QueryRow(queryString, userId).Scan(
 		&user.ID,

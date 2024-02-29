@@ -11,11 +11,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
-type LoginService interface {
-	Login(ctx context.Context, loginRequest *dto.LoginRequest) (dto.Session, error)
+type CreateSessionService interface {
+	CreateSession(ctx context.Context, userID uuid.UUID) (session dto.Session, err error)
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -28,7 +29,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	var loginRequest dto.LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("decoding of login request is failed", zap.Error(err))
+		logger.Error("the decoding of the logging request failed", zap.Error(err))
 		return
 	}
 
@@ -37,7 +38,7 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 		zap.String("email", loginRequest.Email),
 	)
 
-	session, err := h.loginService.Login(ctx, &loginRequest)
+	session, err := h.createSessionService.CreateSession(ctx, loginRequest.UserID)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))
@@ -56,17 +57,17 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 
 	if err = jsonwrapper.WriteJSON(w, http.StatusAccepted, loginResponse); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
-		logger.Error("encoding of create user responce is failed", zap.Error(err))
+		logger.Error("cannot send a login response", zap.Error(err))
 		return
 	}
 }
 
-func New(loginService LoginService) *handler {
+func New(createSessionService CreateSessionService) *handler {
 	return &handler{
-		loginService: loginService,
+		createSessionService: createSessionService,
 	}
 }
 
 type handler struct {
-	loginService LoginService
+	createSessionService CreateSessionService
 }
