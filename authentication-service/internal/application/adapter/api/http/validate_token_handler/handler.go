@@ -40,6 +40,8 @@ func (h *handler) ValidateToken(w http.ResponseWriter, r *http.Request) {
 
 	validateToken := &dto.ValidateToken{
 		UserID:      validateTokenRequest.UserID,
+		UserIP:      validateTokenRequest.UserIP,
+		SessionID:   validateTokenRequest.SessionID,
 		AccessToken: validateTokenRequest.AccessToken,
 		ExpiresAt:   validateTokenRequest.ExpiresAt,
 	}

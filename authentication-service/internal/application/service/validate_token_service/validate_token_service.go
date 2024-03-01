@@ -12,15 +12,26 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
-func (s *service) ValidateToken(ctx context.Context, validateToken *dto.ValidateToken) error {
+type (
+	SessionRepository interface {
+		FetchSessionByUserID(ctx context.Context, userID uuid.UUID) (dto.Session, error)
+	}
+)
+
+func (s *service) ValidateToken(ctx context.Context, accessToken *dto.ValidateToken) error {
 	logger := logging.LoggerFromContext(ctx)
 
-	// TODO check: do we have a user in db?
+	session, err := s.sessionRepository.FetchSessionByUserID(ctx, accessToken.UserID)
+	if err != nil {
+		logger.Error("fetching the session in the database failed", zap.Error(err))
+		return errors.New("cannot fetch the session")
+	}
 
-	token, err := jwt.Parse(validateToken.AccessToken, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(accessToken.AccessToken, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			err := fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 			logger.Error("token method is incorrect", zap.Error(err))
@@ -39,6 +50,11 @@ func (s *service) ValidateToken(ctx context.Context, validateToken *dto.Validate
 			logger.Error("token is expired", zap.Error(err))
 			return err
 		}
+
+		if session.UserID != claims["user_id"] {
+			logger.Error("user from the token doesn't match", zap.Error(err))
+			return err
+		}
 	} else {
 		err := errors.New("token claims error")
 		logger.Error("token claims error", zap.Error(err))
@@ -48,8 +64,12 @@ func (s *service) ValidateToken(ctx context.Context, validateToken *dto.Validate
 	return nil
 }
 
-func New() *service {
-	return &service{}
+func New(sessionRepository SessionRepository) *service {
+	return &service{
+		sessionRepository: sessionRepository,
+	}
 }
 
-type service struct{}
+type service struct {
+	sessionRepository SessionRepository
+}
