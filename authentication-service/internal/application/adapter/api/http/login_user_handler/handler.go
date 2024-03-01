@@ -1,4 +1,4 @@
-package login_handler
+package login_user_handler
 
 import (
 	"authentication-service/internal/application/dto"
@@ -11,12 +11,11 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
 type CreateSessionService interface {
-	CreateSession(ctx context.Context, userID uuid.UUID) (session dto.Session, err error)
+	CreateSession(ctx context.Context, createSession dto.CreateSession) (session dto.Session, err error)
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -26,19 +25,24 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	var loginRequest dto.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
+	var loginUserRequest dto.LoginUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&loginUserRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("the decoding of the logging request failed", zap.Error(err))
 		return
 	}
 
 	logger = logger.With(
-		zap.String("uuid", loginRequest.UserID.String()),
-		zap.String("email", loginRequest.Email),
+		zap.String("user_id", loginUserRequest.UserID.String()),
+		zap.String("user_ip", loginUserRequest.UserIP),
 	)
 
-	session, err := h.createSessionService.CreateSession(ctx, loginRequest.UserID)
+	createSession := dto.CreateSession{
+		UserID: loginUserRequest.UserID,
+		UserIP: loginUserRequest.UserIP,
+	}
+
+	session, err := h.createSessionService.CreateSession(ctx, createSession)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))

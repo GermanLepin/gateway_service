@@ -16,7 +16,7 @@ import (
 	"gateway-service/internal/application/service/create_user_service"
 	"gateway-service/internal/application/service/delete_user_service"
 	"gateway-service/internal/application/service/fetch_user_service"
-	"gateway-service/internal/application/service/login_service"
+	"gateway-service/internal/application/service/login_user_service"
 	"gateway-service/internal/application/service/refresh_token_service"
 	"gateway-service/internal/application/service/validate_token_service"
 
@@ -55,14 +55,14 @@ func main() {
 	user_repository := repository.NewUserRepository(connection)
 
 	create_user_service := create_user_service.New(user_repository)
-	login_service := login_service.New(user_repository)
+	login_user_service := login_user_service.New(user_repository)
 	validate_token_service := validate_token_service.New()
 	refresh_token_service := refresh_token_service.New()
 	fetch_user_service := fetch_user_service.New(user_repository, validate_token_service)
 	delete_user_service := delete_user_service.New(user_repository)
 
 	create_user_handler := create_user_handler.New(create_user_service)
-	login_handler := login_handler.New(login_service)
+	login_handler := login_handler.New(login_user_service)
 	refreshTokenHandler := refresh_token_handler.New(refresh_token_service)
 	fetch_user_handler := fetch_user_handler.New(fetch_user_service)
 	delete_user_handler := delete_user_handler.New(delete_user_service)

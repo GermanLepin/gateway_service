@@ -1,4 +1,4 @@
-package login_service
+package login_user_service
 
 import (
 	"bytes"
@@ -22,24 +22,25 @@ type UserRepository interface {
 func (s *service) Login(
 	ctx context.Context,
 	w http.ResponseWriter,
-	loginRequest *dto.LoginRequest,
+	loginUserRequest *dto.LoginUserRequest,
 ) (session dto.Session, err error) {
 	logger := logging.LoggerFromContext(ctx)
 
-	user, err := s.userRepository.FetchUserByEmail(ctx, loginRequest.Email)
+	user, err := s.userRepository.FetchUserByEmail(ctx, loginUserRequest.Email)
 	if err != nil {
 		logger.Error("fetching the user by user ID in the database is a failed", zap.Error(err))
 		return session, errors.New("cannot login to the user")
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginRequest.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(loginUserRequest.Password))
 	if err != nil {
 		logger.Error("the received password is incorrect", zap.Error(err))
 		return session, errors.New("login error")
 	}
 
-	loginRequest.UserID = user.ID
-	session, err = s.authenticate(ctx, w, *loginRequest)
+	loginUserRequest.UserID = user.ID
+
+	session, err = s.authenticate(ctx, w, *loginUserRequest)
 	if err != nil {
 		logger.Error("sending a request to the authentication-service failed", zap.Error(err))
 		return session, errors.New("login error")
@@ -51,11 +52,11 @@ func (s *service) Login(
 func (s *service) authenticate(
 	ctx context.Context,
 	w http.ResponseWriter,
-	loginRequest dto.LoginRequest,
+	loginUserRequest dto.LoginUserRequest,
 ) (session dto.Session, err error) {
 	logger := logging.LoggerFromContext(ctx)
 
-	jsonData, err := json.MarshalIndent(loginRequest, "", "\t")
+	jsonData, err := json.MarshalIndent(loginUserRequest, "", "\t")
 	if err != nil {
 		logger.Error("login request marshalling is failed", zap.Error(err))
 		return session, err

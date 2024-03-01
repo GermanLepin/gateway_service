@@ -15,7 +15,7 @@ import (
 )
 
 type LoginService interface {
-	Login(ctx context.Context, w http.ResponseWriter, loginRequest *dto.LoginRequest) (dto.Session, error)
+	Login(ctx context.Context, w http.ResponseWriter, loginUserRequest *dto.LoginUserRequest) (dto.Session, error)
 }
 
 func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
@@ -25,15 +25,17 @@ func (h *handler) Login(w http.ResponseWriter, r *http.Request) {
 	logger := logging.LoggerFromContext(ctx)
 	ctx = logging.ContextWithLogger(ctx, logger)
 
-	var loginRequest dto.LoginRequest
-	if err := json.NewDecoder(r.Body).Decode(&loginRequest); err != nil {
+	var loginUserRequest dto.LoginUserRequest
+	if err := json.NewDecoder(r.Body).Decode(&loginUserRequest); err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("the decoding of the login request is failed", zap.Error(err))
 		return
 	}
 
-	logger = logger.With(zap.String("email", loginRequest.Email))
-	session, err := h.loginService.Login(ctx, w, &loginRequest)
+	logger = logger.With(zap.String("email", loginUserRequest.Email))
+
+	loginUserRequest.UserIP = r.Header.Get("user_ip")
+	session, err := h.loginService.Login(ctx, w, &loginUserRequest)
 	if err != nil {
 		jsonwrapper.ErrorJSON(w, err, http.StatusInternalServerError)
 		logger.Error("login is failed", zap.Error(err))

@@ -18,18 +18,24 @@ type SessionRepository interface {
 	SaveSession(ctx context.Context, session *dto.Session) error
 }
 
-func (s *service) CreateSession(ctx context.Context, userID uuid.UUID) (session dto.Session, err error) {
+func (s *service) CreateSession(
+	ctx context.Context,
+	createSession dto.CreateSession,
+) (session dto.Session, err error) {
 	logger := logging.LoggerFromContext(ctx)
 
+	sessionID := uuid.New()
+	createSession.SessionID = sessionID
+
 	accessTokenExpirationTime := time.Now().Add(15 * time.Minute)
-	accessToken, err := s.generateAccessToken(ctx, userID, accessTokenExpirationTime)
+	accessToken, err := s.generateAccessToken(ctx, createSession, accessTokenExpirationTime)
 	if err != nil {
 		logger.Error("access jwt token generation is failed", zap.Error(err))
 		return session, errors.New("login error")
 	}
 
-	refreshTokenExpirationTime := time.Now().Add(72 * time.Hour)
-	refreshToken, err := s.generateRefreshToken(ctx, userID, refreshTokenExpirationTime)
+	refreshTokenExpirationTime := time.Now().Add(96 * time.Hour)
+	refreshToken, err := s.generateRefreshToken(ctx, createSession, refreshTokenExpirationTime)
 	if err != nil {
 		logger.Error("refresh jwt token generation is failed", zap.Error(err))
 		return session, errors.New("login error")
@@ -37,7 +43,7 @@ func (s *service) CreateSession(ctx context.Context, userID uuid.UUID) (session 
 
 	session = dto.Session{
 		ID:                    uuid.New(),
-		UserID:                userID,
+		UserID:                createSession.UserID,
 		IsBlocked:             false,
 		AccessToken:           accessToken,
 		AccessTokenExpiresAt:  accessTokenExpirationTime,
@@ -55,15 +61,17 @@ func (s *service) CreateSession(ctx context.Context, userID uuid.UUID) (session 
 
 func (s *service) generateAccessToken(
 	ctx context.Context,
-	userID uuid.UUID,
+	createSession dto.CreateSession,
 	accessTokenExpirationTime time.Time,
 ) (jwtToken string, err error) {
 	logger := logging.LoggerFromContext(ctx)
 
 	// generate access JWT token
 	jwtClaims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     accessTokenExpirationTime.Unix(),
+		"user_id":    createSession.UserID,
+		"user_ip":    createSession.UserIP,
+		"session_id": createSession.SessionID,
+		"exp":        accessTokenExpirationTime.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)
@@ -78,15 +86,17 @@ func (s *service) generateAccessToken(
 
 func (s *service) generateRefreshToken(
 	ctx context.Context,
-	userID uuid.UUID,
+	createSession dto.CreateSession,
 	refreshTokenExpirationTime time.Time,
 ) (jwtToken string, err error) {
 	logger := logging.LoggerFromContext(ctx)
 
-	// generate refresh JWT token
+	// generate access JWT token
 	jwtClaims := jwt.MapClaims{
-		"user_id": userID,
-		"exp":     refreshTokenExpirationTime.Unix(),
+		"user_id":    createSession.UserID,
+		"user_ip":    createSession.UserIP,
+		"session_id": createSession.SessionID,
+		"exp":        refreshTokenExpirationTime.Unix(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims)

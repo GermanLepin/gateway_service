@@ -17,20 +17,13 @@ import (
 func (s *service) ValidateTokenRequest(ctx context.Context, r *http.Request, userID uuid.UUID) error {
 	logger := logging.LoggerFromContext(ctx)
 
-	tokenString := r.Header.Get("access_token")
-	expiresAtString := r.Header.Get("access_token_expires_at")
-	expiresAt, err := time.Parse(time.RFC3339Nano, expiresAtString)
+	validateTokenRequest, err := collectingValidateTokenRequest(r)
 	if err != nil {
-		logger.Error("time parcing is failed", zap.Error(err))
+		logger.Error("collecting validate token request failed", zap.Error(err))
 		return err
 	}
 
-	validateTokenRequest := &dto.ValidateTokenRequest{
-		UserID:      userID,
-		AccessToken: tokenString,
-		ExpiresAt:   expiresAt,
-	}
-
+	validateTokenRequest.UserID = userID
 	jsonData, err := json.MarshalIndent(validateTokenRequest, "", "\t")
 	if err != nil {
 		logger.Error("validate token request marshalling is failed", zap.Error(err))
@@ -60,6 +53,33 @@ func (s *service) ValidateTokenRequest(ctx context.Context, r *http.Request, use
 	}
 
 	return nil
+}
+
+func collectingValidateTokenRequest(r *http.Request) (validateTokenRequest dto.ValidateTokenRequest, err error) {
+	userIP := r.Header.Get("user_ip")
+
+	sessionID := r.Header.Get("session_id")
+	sessionUUID, err := uuid.Parse(sessionID)
+	if err != nil {
+		return validateTokenRequest, err
+	}
+
+	accessToken := r.Header.Get("access_token")
+
+	expiresAtString := r.Header.Get("access_token_expires_at")
+	expiresAt, err := time.Parse(time.RFC3339Nano, expiresAtString)
+	if err != nil {
+		return validateTokenRequest, err
+	}
+
+	validateTokenRequest = dto.ValidateTokenRequest{
+		UserIP:      userIP,
+		SessionID:   sessionUUID,
+		AccessToken: accessToken,
+		ExpiresAt:   expiresAt,
+	}
+
+	return validateTokenRequest, nil
 }
 
 func New() *service {

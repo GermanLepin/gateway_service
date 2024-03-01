@@ -21,7 +21,7 @@ type (
 	}
 
 	CreateSessionService interface {
-		CreateSession(ctx context.Context, userID uuid.UUID) (session dto.Session, err error)
+		CreateSession(ctx context.Context, createSession dto.CreateSession) (session dto.Session, err error)
 	}
 )
 
@@ -67,8 +67,14 @@ func (s *service) RefreshToken(
 		return session, err
 	}
 
+	createSession := dto.CreateSession{
+		UserID:    refreshToken.UserID,
+		UserIP:    refreshToken.UserIP,
+		SessionID: refreshToken.SessionID,
+	}
+
 	// if everything is on track, we should create a new session and return it to the gateway-service
-	session, err = s.createSessionService.CreateSession(ctx, refreshToken.UserID)
+	session, err = s.createSessionService.CreateSession(ctx, createSession)
 	if err != nil {
 		logger.Error("creating a new session in the database failed", zap.Error(err))
 		return session, errors.New("cannot cretae a new session")
